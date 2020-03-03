@@ -9,13 +9,16 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import 
 
 public class NNJ {
 	final static int updateRootCost  = 1;
 	final static int insertContained = 1;
 	final static int deleteContained = 1;
+	private static HashSet
 
 	public static int[][] NNJ(Element rootA, Element rootB ){
+		
 		clean(rootA);
 		NodeList listA = rootA.getChildNodes();
 		NodeList listB = rootB.getChildNodes();
@@ -29,7 +32,7 @@ public class NNJ {
 		for(int i = 1; i<= m;i++) {
 			dist[i][0] = dist[i-1][0] + CostDeleteTree(rootA);
 		}
-		for(int i = 1; i<= m;i++) {
+		for(int i = 1; i<= n;i++) {
 			dist[0][i] = dist[0][i-1] + CostInsertTree(rootB);
 		}
 		
@@ -39,18 +42,23 @@ public class NNJ {
 			}
 		}
 		
-		return null;
+		return dist[m][n];
 	}
 
-	private static int CostInsertTree(Element rootB) {
+	private static int CostInsertTree(Node rootB) {
 		return rootB.getElementsByTagName("*").getLength();
 	}
 
-	private static int CostDeleteTree(Element rootA) {
+	private static int CostDeleteTree(Node rootA) {
 		return rootA.getElementsByTagName("*").getLength();
 	}
+	
+	private static boolean containedIn(Node in, Node tree) {
+		
+		
+	}
 
-	private static int CostUpdateRoot(Element rootA, Element rootB) {
+	private static int CostUpdateRoot(Node rootA, Node rootB) {
 		if(rootA.getNodeName().equals(rootB.getNodeName()))
 			return 0;
 		else
