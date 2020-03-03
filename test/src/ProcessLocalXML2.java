@@ -26,6 +26,7 @@ public class ProcessLocalXML2 {
 		print(root, 0);
 		System.out.println(root.getNodeName());
 		// NodeList staffList = root.getChildNodes();
+		// hhhhh
 
 	}
 
