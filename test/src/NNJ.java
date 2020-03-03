@@ -35,7 +35,7 @@ public class NNJ {
 		
 		for(int i = 1;i<=m;i++) {
 			for(int j=1;j<n;j++) {
-//				dist[i][j] = 
+				dist[i][j] = Math.min(Math.min(dist[i-1][j-1] + NNJ(listA.item(i),listA.item(j)),dist[i-1][j] + CostDeleteTree(rootA)), dist[i][j-1] + CostInsertTree(rootB)); 
 			}
 		}
 		
