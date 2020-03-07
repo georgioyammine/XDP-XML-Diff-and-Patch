@@ -24,6 +24,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -34,8 +35,9 @@ public class NNJ {
 	final static int deleteOrInsertLeaf = 1;
 	private static ArrayList<Node> TreesInA = new ArrayList<>();
 	private static ArrayList<Node> TreesInB = new ArrayList<>();
+	private static String randomDelete = "jci8ElHvLDr6DKejR7ng";
 	static double version = 0.1;
-	private static Document dcm;
+	
 
 	private static class XYZ {
 		int x, y, nx, ny, z;
@@ -330,8 +332,139 @@ public class NNJ {
 
 	}
 
-	// update then delete then insert
+	
 	private static void editScriptToXML(ArrayList<XYZ> E, File original, File newFile, Node rootB, int distance)
+			throws Exception {
+		try {
+			ArrayList<XYZ> ES = new ArrayList<>(E);
+
+			DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
+			Document document = documentBuilder.newDocument();
+
+			Element root = document.createElement("XML_Patch");
+			document.appendChild(root);
+			root.setAttribute("version", "" + version);
+			root.setAttribute("distance", distance + "");
+
+			Element file1 = document.createElement("Original_File");
+			file1.setAttribute("name", original.getName());
+			File tmpInput = File.createTempFile("nnj", ".tmp");
+			tmpInput.deleteOnExit();
+			WriteXMLtoFile(getRootNodeFromFile(original.getAbsolutePath()), tmpInput.getAbsolutePath(),true);
+			long crc = checksumBufferedInputStream(tmpInput);
+			String hashInput = Long.toHexString(crc);
+
+			file1.setAttribute("Hash", "" + hashInput);
+
+			// hashCode is used to verify if the input file is correct and compatible
+			// file1.setTextContent(original.getName());
+
+			Element file2 = document.createElement("Patched_File");
+			file2.setAttribute("name", newFile.getName());
+			
+			File tmpInput2 = File.createTempFile("nnj", ".tmp");
+			tmpInput2.deleteOnExit();
+			WriteXMLtoFile(getRootNodeFromFile(newFile.getAbsolutePath()), tmpInput2.getAbsolutePath(),true);
+			long crc2 = checksumBufferedInputStream(tmpInput2);
+			String hashInput2 = Long.toHexString(crc2);
+			tmpInput2.delete();
+			
+			file2.setAttribute("Hash", "" + hashInput2);
+
+			// hash is used to verify if the output is correct
+
+			root.appendChild(file1);
+			root.appendChild(file2);
+
+			Element es = document.createElement("Edit_Script");
+
+			root.appendChild(es);
+
+			Collections.reverse(ES);
+			Element eltu;
+			eltu = document.createElement("Update");
+			for (XYZ token : ES) {
+				
+				if (token.x == -1) {
+					Element elt2 = document.createElement(token.a+ "");
+					
+
+					String op = token.b + "";
+					op = op.substring(1); // removing B or Tree Name
+					Node toUpdate = document.importNode(rootB, true);
+
+					while (op.length() > 0) {
+						toUpdate = toUpdate.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+						op = op.substring(1);
+					}
+//					elt.setAttribute(token.a, toUpdate.getNodeName());
+					// System.out.println("XX"+elt);
+					elt2.setTextContent(toUpdate.getNodeName());
+					eltu.appendChild(elt2);
+					
+					// ES.remove(token);
+				}
+				
+			}
+			if(eltu.hasChildNodes())
+				es.appendChild(eltu);
+			
+			Element eltd;
+			eltd = document.createElement("Delete");
+			for (XYZ token : ES) {
+				
+				if (token.x != -1 && token.x < token.nx) {
+					Element elt2 = document.createElement(token.a + token.nx + "");
+					eltd.appendChild(elt2);
+					// ES.remove(token);
+				}
+				
+			}
+			if(eltd.hasChildNodes())
+				es.appendChild(eltd);
+			Element elti;
+			elti = document.createElement("Insert");
+			for (XYZ token : ES) {
+				
+				if (token.x != -1 && !(token.x < token.nx)) {
+					Element elt2;
+					elt2 = document.createElement("A" + (token.b + token.ny + "").substring(1));
+//					elt.setAttribute("at", );
+					// elt.setTextContent(token.b+token.ny+"");
+
+					String opc = token.b + token.ny + "";
+					opc = opc.substring(1); // removing B or Tree Name
+					Node toInsert = document.importNode(rootB, true);
+
+					while (opc.length() > 0) {
+						toInsert = toInsert.getChildNodes().item(Integer.parseInt("" + opc.charAt(0)) - 1);
+						opc = opc.substring(1);
+					}
+					elt2.appendChild(toInsert);
+					elti.appendChild(elt2);
+					
+					// ES.remove(token);
+
+				}
+				
+			}
+			if(elti.hasChildNodes())
+				es.appendChild(elti);
+
+			String fileName = "PATCH_" + original.getName() + "_" + newFile.getName() + "_" + version + ".xml";
+
+			WriteXMLtoFile(root, fileName,false);
+		} catch (DOMException | IllegalArgumentException | ParserConfigurationException
+				| TransformerFactoryConfigurationError e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	
+	// update then delete then insert
+	private static void editScriptToXMLold(ArrayList<XYZ> E, File original, File newFile, Node rootB, int distance)
 			throws Exception {
 		try {
 			ArrayList<XYZ> ES = new ArrayList<>(E);
@@ -458,8 +591,312 @@ public class NNJ {
 		clean(root);
 		return root;
 	}
-
+	
 	public static String applyPatchXML(String fileName, String ESXML) throws Exception {
+		try {
+			randomDelete ="A"+getAlphaNumericString(9);
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.newDocument();
+
+			Node rootC = doc.importNode(getRootNodeFromFile(fileName), true);
+			doc.appendChild(rootC);
+
+			Node ESroot = getRootNodeFromFile(ESXML);
+
+			if (Double.parseDouble(((Element) ESroot).getAttributes().item(1).getNodeValue()) != version) {
+				System.out.println("Error: Incompatible version");
+				return "";
+			}
+			
+			boolean fileNameMatches = ((Element) ESroot).getElementsByTagName("Original_File").item(0).getAttributes()
+					.item(1).getNodeValue().equals(fileName);
+
+			String hs1 = ((Element) ESroot).getElementsByTagName("Original_File").item(0).getAttributes()
+					.item(0).getNodeValue();
+
+			
+			File tmpInput = File.createTempFile("nnj", ".tmp");
+			WriteXMLtoFile(getRootNodeFromFile(fileName), tmpInput.getAbsolutePath(),true);
+			long crc = checksumBufferedInputStream(tmpInput);
+			String hashInput = Long.toHexString(crc);
+			tmpInput.delete();
+
+			boolean HashCodeMatches = hs1.equals(hashInput);
+
+			if (!HashCodeMatches) {
+				System.out.println("Error: Original File does not match!");
+				return "";
+			}
+			if (!fileNameMatches) {
+				// System.out.println(((Element)ESroot).getElementsByTagName("Original_File").item(0).getTextContent());
+				// System.out.println(fileName);
+				System.out.println("Warning: Original File Name does not match!");
+			}
+			String patchedName = ((Element) ESroot).getElementsByTagName("Patched_File").item(0).getAttributes().item(1)
+					.getNodeValue();
+			String targetHash = ((Element) ESroot).getElementsByTagName("Patched_File").item(0).getAttributes().item(0)
+					.getNodeValue();
+
+//			NodeList editScript = ((Element) ESroot).getElementsByTagName("Edit_Script").item(0).getChildNodes();
+			Node es = ((Element) ESroot).getElementsByTagName("Edit_Script").item(0);
+			
+			Node update = ((Element)es).getElementsByTagName("Update").item(0);
+			Node delete = ((Element)es).getElementsByTagName("Delete").item(0);
+			Node insert = ((Element)es).getElementsByTagName("Insert").item(0);
+			
+			if(update!=null) {
+				NodeList upd = update.getChildNodes();
+				for(int i = 0;i<upd.getLength();i++) {
+					Node node = upd.item(i);
+					String op1 = node.getNodeName();
+					String op2 = node.getTextContent();
+					op1 = op1.substring(1); // remove A or Tree name
+
+					Node rc = rootC;
+
+					while (op1.length() > 0) {
+						rc = rc.getChildNodes().item(Integer.parseInt("" + op1.charAt(0)) - 1);
+						op1 = op1.substring(1);
+					}
+					doc.renameNode(rc, null, op2);
+					
+				}
+			}
+			
+			if(delete!=null) {
+				NodeList del = delete.getChildNodes();
+				for(int i = del.getLength()-1;i>=0;i--) {
+					Node node = del.item(i);
+					String op = node.getNodeName();
+					op = op.substring(1); // removing A or Tree Name
+					Node temp = rootC;
+					while (op.length() > 1) {
+						temp = temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+						op = op.substring(1);
+					}
+					// temp.setNodeValue("BxvD8Xdlq0O8ejTS"); // value for delete
+//					doc.renameNode(temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1), null, randomDelete);
+					temp.removeChild(temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
+					
+				}
+			}
+				
+				if(insert!=null) {
+					NodeList ins = insert.getChildNodes();
+					for(int i = 0;i<ins.getLength();i++) {
+						Node node = ins.item(i);
+						
+						Node toInsert = doc.importNode(node.getFirstChild(),true);
+
+						String op = node.getNodeName();
+						op = op.substring(1); // removing A or Tree Name
+						Node temp = rootC;
+						while (op.length() > 1) {
+							temp = temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+							op = op.substring(1);
+						}
+						if(temp.hasChildNodes()) {
+						temp.insertBefore(toInsert,
+								temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
+						}
+						else {
+							temp.appendChild(toInsert);
+						}
+					}	
+			}
+			
+			
+			String absPath = WriteXMLtoFile(rootC, patchedName,false);
+			
+			File tmpInput2 = File.createTempFile("nnj", ".tmp");
+			tmpInput2.deleteOnExit();
+			WriteXMLtoFile(getRootNodeFromFile(absPath), tmpInput2.getAbsolutePath(),true);
+			long crc2 = checksumBufferedInputStream(tmpInput2);
+			String hashInput2 = Long.toHexString(crc2);
+			tmpInput2.delete();
+			
+			if (!targetHash.equals(hashInput2)) {
+				System.out.println("Wrong Result Expected: Hash checksum does not match");
+			}
+			else {
+				System.out.println("Patch successful, hash checksum matches!");
+			}
+			
+			return absPath;
+
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		
+	}
+
+	
+	
+	
+
+	public static String applyPatchXMLold1(String fileName, String ESXML) throws Exception {
+		try {
+			randomDelete ="A"+getAlphaNumericString(8);
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.newDocument();
+
+			Node rootC = doc.importNode(getRootNodeFromFile(fileName), true);
+			doc.appendChild(rootC);
+
+			Node ESroot = getRootNodeFromFile(ESXML);
+
+			if (Double.parseDouble(((Element) ESroot).getAttributes().item(1).getNodeValue()) != version) {
+				System.out.println("Error: Incompatible version");
+				return "";
+			}
+			
+			boolean fileNameMatches = ((Element) ESroot).getElementsByTagName("Original_File").item(0).getAttributes()
+					.item(1).getNodeValue().equals(fileName);
+
+			String hs1 = ((Element) ESroot).getElementsByTagName("Original_File").item(0).getAttributes()
+					.item(0).getNodeValue();
+
+			
+			File tmpInput = File.createTempFile("nnj", ".tmp");
+			WriteXMLtoFile(getRootNodeFromFile(fileName), tmpInput.getAbsolutePath(),true);
+			long crc = checksumBufferedInputStream(tmpInput);
+			String hashInput = Long.toHexString(crc);
+			tmpInput.delete();
+
+			boolean HashCodeMatches = hs1.equals(hashInput);
+
+			if (!HashCodeMatches) {
+				System.out.println("Error: Original File does not match!");
+				return "";
+			}
+			if (!fileNameMatches) {
+				// System.out.println(((Element)ESroot).getElementsByTagName("Original_File").item(0).getTextContent());
+				// System.out.println(fileName);
+				System.out.println("Warning: Original File Name does not match!");
+			}
+			String patchedName = ((Element) ESroot).getElementsByTagName("Patched_File").item(0).getAttributes().item(1)
+					.getNodeValue();
+			String targetHash = ((Element) ESroot).getElementsByTagName("Patched_File").item(0).getAttributes().item(0)
+					.getNodeValue();
+
+			NodeList editScript = ((Element) ESroot).getElementsByTagName("Edit_Script").item(0).getChildNodes();
+			for (int i = 0; i < editScript.getLength(); i++) {
+				Node script = editScript.item(i);
+				if (script.getNodeName().equals("Update")) {
+					String op1 = script.getAttributes().item(0).getNodeName();
+					String op2 = script.getAttributes().item(0).getNodeValue();
+					op1 = op1.substring(1); // remove A or Tree name
+
+					Node rc = rootC;
+
+					while (op1.length() > 1) {
+						rc = rc.getChildNodes().item(Integer.parseInt("" + op1.charAt(0)) - 1);
+						op1 = op1.substring(1);
+					}
+					doc.renameNode(rc, null, op2);
+				} else {
+					boolean aaa = true;
+					if (script.getNodeName().equals("Delete")) {
+						String op = script.getAttributes().item(0).getNodeValue();
+						op = op.substring(1); // removing A or Tree Name
+						Node temp = rootC;
+						while (op.length() > 1) {
+							temp = temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+							op = op.substring(1);
+						}
+						// temp.setNodeValue("BxvD8Xdlq0O8ejTS"); // value for delete
+						doc.renameNode(temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1), null, randomDelete);
+//						temp.removeChild(temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
+
+					} else {
+						if (script.getNodeName().equals("Insert")) {
+							//delete all node from before with name randomDelete
+							if(aaa) {
+							NodeList deleteList = ((Element)rootC).getElementsByTagName(randomDelete);
+							System.out.println(deleteList.getLength()+"size");
+							for(int k =0;k<deleteList.getLength();k++) {
+								try {
+									Node a = doc.getDocumentElement();
+//									while()
+//									doc.d
+//									doc.rem
+//									temp.removeChild(deleteList.item(k));
+									System.out.print(k+" ");
+									System.out.println(rootC.removeChild(deleteList.item(k)));
+									
+									
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+							aaa=false;
+							}
+							print(rootC,0);
+							Node toInsert = doc.importNode(script.getFirstChild(), true);
+
+							String op = script.getAttributes().item(0).getNodeValue();
+							op = op.substring(1); // removing A or Tree Name
+							System.out.println(op);
+							Node temp = rootC;
+							while (op.length() > 1) {
+								System.out.print(op);
+								temp = temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+								op = op.substring(1);
+								System.out.println(temp);
+							}
+							
+							System.out.println(Integer.parseInt("" + op.charAt(0)) - 1);
+							System.out.println(temp.hasChildNodes());
+							if(temp.hasChildNodes()) {
+							temp.insertBefore(toInsert,
+									temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
+							}
+							else {
+								temp.appendChild(toInsert);
+							}
+//							temp.inser
+
+						}
+					}
+				}
+			}
+			
+			
+			
+			
+			String absPath = WriteXMLtoFile(rootC, patchedName,false);
+			
+			File tmpInput2 = File.createTempFile("nnj", ".tmp");
+			tmpInput2.deleteOnExit();
+			WriteXMLtoFile(getRootNodeFromFile(absPath), tmpInput2.getAbsolutePath(),true);
+			long crc2 = checksumBufferedInputStream(tmpInput2);
+			String hashInput2 = Long.toHexString(crc2);
+			tmpInput2.delete();
+			
+			if (!targetHash.equals(hashInput2)) {
+				System.out.println("Wrong Result Expected: Hash checksum does not match");
+			}
+			else {
+				System.out.println("Patch successful, hash checksum matches!");
+			}
+			
+			return absPath;
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+	}
+
+	
+	private static String applyPatchXMLold(String fileName, String ESXML) throws Exception {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -624,6 +1061,8 @@ public class NNJ {
 
 	private static boolean containedIn(Node rootA, ArrayList<Node> TreesIn) {
 		for (Node a : TreesIn) {
+//			if(rootA.isEqualNode(a))
+//				return true;
 			if (containedIn2(rootA, a))
 				return true;
 		}
@@ -631,12 +1070,11 @@ public class NNJ {
 	}
 //
 	public static boolean containedIn(Node rootA, Node rootB) {
-		
 		getTreesInB(rootB);
 		return containedIn(rootA, TreesInB);
 	}
 
-	public static boolean containedIn2(Node rootA, Node rootB) {
+	private static boolean containedIn2(Node rootA, Node rootB) {
 		if(!rootA.getNodeName().equals(rootB.getNodeName()))
 			return false;
 		
@@ -826,4 +1264,55 @@ public class NNJ {
 		inputStream.close();
 		return crc.getValue();
 	}
+	
+	private static String getAlphaNumericString(int n) 
+    { 
+  
+        // chose a Character random from this String 
+        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                    + "0123456789"
+                                    + "abcdefghijklmnopqrstuvxyz"; 
+  
+        // create StringBuffer size of AlphaNumericString 
+        StringBuilder sb = new StringBuilder(n); 
+  
+        for (int i = 0; i < n; i++) { 
+  
+            // generate a random number between 
+            // 0 to AlphaNumericString variable length 
+            int index 
+                = (int)(AlphaNumericString.length() 
+                        * Math.random()); 
+  
+            // add Character one by one in end of sb 
+            sb.append(AlphaNumericString 
+                          .charAt(index)); 
+        } 
+  
+        return sb.toString(); 
+    } 
+	
+	private static void print(Node node, int depth) {
+		for (int i = 0; i < depth; i++) {
+			System.out.print("  ");
+		}
+		System.out.print(node.getNodeName()+" ");
+		if (node.getNodeType() != Node.TEXT_NODE) {
+			System.out.print("{");
+			NamedNodeMap att = node.getAttributes();
+			for (int i = 0; att != null && i < att.getLength(); i++) {
+				System.out.print(att.item(i).getNodeName() + ", "+att.item(i).getNodeValue());
+			}
+			System.out.print("}");
+		}
+
+		System.out.println(node.getNodeValue() == null ? "" : node.getNodeValue());
+
+		NodeList list = node.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			// clean(list.item(i));
+			print(list.item(i), depth + 1);
+		}
+	}
+
 }
