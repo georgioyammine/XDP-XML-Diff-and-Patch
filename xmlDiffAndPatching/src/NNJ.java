@@ -624,25 +624,43 @@ public class NNJ {
 
 	private static boolean containedIn(Node rootA, ArrayList<Node> TreesIn) {
 		for (Node a : TreesIn) {
-			if (a.isEqualNode(rootA))
+			if (containedIn2(rootA, a))
 				return true;
 		}
 		return false;
 	}
-
-	public static boolean containedIn(Node rootA, Node rootB, boolean f) {
-		clean(rootA);
-		clean(rootB);
-
-		getTreesInB(rootB); // pre-processing
-
-		System.out.println(TreesInB);
-		for (Node a : TreesInB) {
-			if (a.isEqualNode(rootA))
-				return true;
-		}
-		return false;
+//
+	public static boolean containedIn(Node rootA, Node rootB) {
+		
+		getTreesInB(rootB);
+		return containedIn(rootA, TreesInB);
 	}
+
+	public static boolean containedIn2(Node rootA, Node rootB) {
+		if(!rootA.getNodeName().equals(rootB.getNodeName()))
+			return false;
+		
+		if(!rootA.hasChildNodes())
+			return rootA.isEqualNode(rootB);
+		
+		NodeList listA = rootA.getChildNodes();
+		NodeList listB = rootB.getChildNodes();
+		boolean flag1 = true;
+		for(int i = 0; i<listA.getLength();i++) {
+			boolean flag = false;
+			for(int j = 0; j<listB.getLength();j++) {
+				if(listA.item(i).getNodeName().equals(listB.item(j).getNodeName()))
+					flag = flag || containedIn2(listA.item(i),listB.item(j)); 
+				if(flag)
+					break;
+			}
+			flag1 = flag1 && flag;
+			if(!flag1)
+				return false;
+		}
+		return flag1;
+	}
+
 
 	private static void getTreesInA(Node node) {
 		TreesInA.add(node);
