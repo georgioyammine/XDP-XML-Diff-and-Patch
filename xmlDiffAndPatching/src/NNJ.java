@@ -57,6 +57,33 @@ public class NNJ {
 			return "[" + a + ", " + b + ", " + x + ", " + y + ", " + nx + ", " + ny + ", " + z + "]";
 		}
 	}
+	public static int TEDAttr(NamedNodeMap attrA, NamedNodeMap attrB) {
+		int[][] distance = new int[attrA.getLength()+1][attrB.getLength()+1];
+		distance[0][0] = 0;
+		int a = Integer.MAX_VALUE;
+		int b = Integer.MAX_VALUE;
+		int c = Integer.MAX_VALUE;
+		for(int i = 1; i<= attrA.getLength();i++)
+			 distance[i][0] = distance[i-1][0] + 1;
+		for(int j = 1; j<=attrB.getLength(); j++)
+			 distance[0][j] = distance[0][j-1] + 1;
+		for(int i = 1; i<=attrA.getLength();i++) {
+			for(int j = 1; j<=attrB.getLength(); j++) {
+				
+					a =	distance[i-1][j] + 1;
+					b = distance[i][j-1] + 1;
+					c = distance[i-1][j-1] + CostUpdateAttr(attrA.item(i-1), attrB.item(j-1));
+				distance[i][j] = Math.min(a,Math.min(b, c));
+				
+			}
+		}
+		for(int i = 0; i<=attrA.getLength();i++) {
+			for(int j = 0; j<=attrB.getLength();j++)
+				System.out.print(distance[i][j] + " ");
+			System.out.println();
+		}
+		return distance[attrA.getLength()][attrB.getLength()];
+	}
 
 	public static ArrayList<Object> TED(Node rootA, Node rootB, String R1, String R2, boolean print) {
 
@@ -1143,6 +1170,13 @@ public class NNJ {
 			return 0;
 		else
 			return updateRootCost;
+	}
+	private static int CostUpdateAttr(Node attrA, Node attrB) {
+
+		if (attrA.getNodeName().equals(attrB.getNodeName()))
+			return 0;
+		else
+			return 1;
 	}
 
 	private static Node applyPatch(ArrayList<String> ES, Node rootA, Node rootB) {
