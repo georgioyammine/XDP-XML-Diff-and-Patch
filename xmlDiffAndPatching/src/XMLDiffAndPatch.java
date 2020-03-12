@@ -172,21 +172,6 @@ public class XMLDiffAndPatch {
 
 			}
 		}
-		private static int CostUpdateAttr(Node attrA, Node attrB) {
-
-		if (attrA.getNodeName().equals(attrB.getNodeName())) {
-			if (attrA.getTextContent().equals(attrB.getTextContent()))
-				return 0;
-			else
-				return attributeValueCost;
-		} else {
-			if (attrA.getTextContent().equals(attrB.getTextContent()))
-				return attributeNameCost;
-			else
-				return attributeNameCost + attributeValueCost;
-		}
-
-	}
 		for (int i = 0; i <= rootAContent.length; i++) {
 			for (int j = 0; j <= rootBContent.length; j++)
 				System.out.print(distance[i][j] + " ");
@@ -201,7 +186,6 @@ public class XMLDiffAndPatch {
 		else
 			return contentTokenCost;
 	}
-
 
 	public static ArrayList<Object> TED(Node rootA, Node rootB, String R1, String R2, boolean print) {
 
