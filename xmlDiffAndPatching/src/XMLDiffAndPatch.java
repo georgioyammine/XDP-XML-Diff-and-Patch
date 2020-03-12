@@ -186,6 +186,21 @@ public class XMLDiffAndPatch {
 		else
 			return contentTokenCost;
 	}
+	private static int CostUpdateAttr(Node attrA, Node attrB) {
+
+		if (attrA.getNodeName().equals(attrB.getNodeName())) {
+			if (attrA.getTextContent().equals(attrB.getTextContent()))
+				return 0;
+			else
+				return attributeValueCost;
+		} else {
+			if (attrA.getTextContent().equals(attrB.getTextContent()))
+				return attributeNameCost;
+			else
+				return attributeNameCost + attributeValueCost;
+		}
+
+	}
 
 	public static ArrayList<Object> TED(Node rootA, Node rootB, String R1, String R2, boolean print) {
 
