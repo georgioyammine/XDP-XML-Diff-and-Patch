@@ -61,6 +61,147 @@ public class XMLDiffAndPatch {
 			return "[" + a + ", " + b + ", " + x + ", " + y + ", " + nx + ", " + ny + ", " + z + "]";
 		}
 	}
+	public static int TEDAttr(NamedNodeMap attrA, NamedNodeMap attrB) {
+		int[][] distance = new int[attrA.getLength() + 1][attrB.getLength() + 1];
+		distance[0][0] = 0;
+
+		int insert = Integer.MAX_VALUE;
+		int delete = Integer.MAX_VALUE;
+		int update = Integer.MAX_VALUE;
+
+		for (int i = 1; i <= attrA.getLength(); i++)
+			distance[i][0] = distance[i - 1][0] + 1;
+		for (int j = 1; j <= attrB.getLength(); j++)
+			distance[0][j] = distance[0][j - 1] + 1;
+		for (int i = 1; i <= attrA.getLength(); i++) {
+			for (int j = 1; j <= attrB.getLength(); j++) {
+
+				update = distance[i - 1][j - 1] + CostUpdateAttr(attrA.item(i - 1), attrB.item(j - 1));
+				System.out.println(update + " " + i + " " + j);
+				if (update <= distance[i - 1][j]) {
+					if (update <= distance[i][j - 1]) {
+						distance[i][j] = update;
+						System.out.println("Update at " + i + " " + j);
+					} else {
+						insert = distance[i][j - 1] + attributeNameCost + attributeValueCost;
+						if (insert < update)
+							distance[i][j] = insert;
+						else
+							distance[i][j] = update;
+					}
+
+				} else {
+					delete = distance[i - 1][j] + attributeNameCost + attributeValueCost;
+					if (delete <= distance[i][j - 1]) {
+						distance[i][j] = delete;
+					} else {
+						insert = distance[i - 1][j] + attributeNameCost + attributeValueCost;
+						if (insert < update) {
+							if (insert < delete)
+								distance[i][j] = insert;
+							else
+								distance[i][j] = delete;
+						}
+						else {
+							if(delete<update)
+								distance[i][j] =delete;
+							else
+								distance[i][j] = update;
+						}
+					}
+				}
+
+			}
+		}
+		for (int i = 0; i <= attrA.getLength(); i++) {
+			for (int j = 0; j <= attrB.getLength(); j++)
+				System.out.print(distance[i][j] + " ");
+			System.out.println();
+		}
+		return distance[attrA.getLength()][attrB.getLength()];
+	}
+
+	public static int TEDNodeValue(String[] rootAContent, String[] rootBContent) {
+		int[][] distance = new int[rootAContent.length + 1][rootBContent.length + 1];
+		distance[0][0] = 0;
+		int delete = Integer.MAX_VALUE;
+		int insert = Integer.MAX_VALUE;
+		int update = Integer.MAX_VALUE;
+		for (int i = 1; i <= rootAContent.length; i++)
+			distance[i][0] = distance[i - 1][0] + 1;
+		for (int j = 1; j <= rootBContent.length; j++)
+			distance[0][j] = distance[0][j - 1] + 1;
+		for (int i = 1; i <= rootAContent.length; i++) {
+			for (int j = 1; j <= rootBContent.length; j++) {
+				update = distance[i - 1][j - 1] + CostUpdateContent(rootAContent[i - 1], rootBContent[j - 1]);
+
+				if (update <= distance[i - 1][j]) {
+					if (update <= distance[i][j - 1]) {
+						distance[i][j] = update;
+//						System.out.println("Update " + i + " " + j);
+					} else {
+						insert = distance[i][j - 1] + contentTokenCost;
+//						System.out.println("Insert at "+ (i-1) + " " + j + " " + distance[i-1][j]);
+						if (insert < update)
+							distance[i][j] = insert;
+						else
+							distance[i][j] = update;
+//						System.out.println("Update " + i + " " + j);
+					}
+
+				} else {
+					delete = distance[i - 1][j] + contentTokenCost;
+					if (delete <= distance[i][j - 1]) {
+						distance[i][j] = delete;
+					} else {
+						insert = distance[i - 1][j] + contentTokenCost;
+						if (insert < update) {
+							if (insert < delete)
+								distance[i][j] = insert;
+							else
+								distance[i][j] = delete;
+						}
+						else {
+							if(delete<update)
+								distance[i][j] =delete;
+							else
+								distance[i][j] = update;
+						}
+					}
+				}
+
+			}
+		}
+		private static int CostUpdateAttr(Node attrA, Node attrB) {
+
+		if (attrA.getNodeName().equals(attrB.getNodeName())) {
+			if (attrA.getTextContent().equals(attrB.getTextContent()))
+				return 0;
+			else
+				return attributeValueCost;
+		} else {
+			if (attrA.getTextContent().equals(attrB.getTextContent()))
+				return attributeNameCost;
+			else
+				return attributeNameCost + attributeValueCost;
+		}
+
+	}
+		for (int i = 0; i <= rootAContent.length; i++) {
+			for (int j = 0; j <= rootBContent.length; j++)
+				System.out.print(distance[i][j] + " ");
+			System.out.println();
+		}
+		return distance[rootAContent.length][rootBContent.length];
+	}
+
+	private static int CostUpdateContent(String rootAContent, String rootBContent) {
+		if (rootAContent.equals(rootBContent))
+			return 0;
+		else
+			return contentTokenCost;
+	}
+
 
 	public static ArrayList<Object> TED(Node rootA, Node rootB, String R1, String R2, boolean print) {
 
