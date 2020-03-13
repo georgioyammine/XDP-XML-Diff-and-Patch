@@ -77,6 +77,15 @@ public class Util {
 		}
 
 	}
+	private static boolean stringContainedIn(Node rootA, ArrayList<Node> listB) {
+		String[] arr = rootA.getTextContent().split("\\s+");
+		for (int i = 0; i < listB.size(); i++) {
+			String[] arr2 = listB.get(i).getTextContent().split("\\s+");
+			if (arr.equals(arr2))
+				return true;
+		}
+		return false;
+	}
 
 	public static String getAlphaNumericString(int n) {
 
