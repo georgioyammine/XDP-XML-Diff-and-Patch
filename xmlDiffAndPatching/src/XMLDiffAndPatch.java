@@ -176,6 +176,117 @@ public class XMLDiffAndPatch {
 		// results.add(2,fes);
 		return results;
 	}
+		public static ArrayList<Object> EDNodeContent(Node rootA, Node rootB) {
+		ArrayList<Node> listA = new ArrayList<Node>();
+		ArrayList<Node> listB = new ArrayList<Node>();
+
+		ArrayList<Object> arl = new ArrayList<Object>();
+
+		listA = getTextChildNode(rootA);
+		listB = getTextChildNode(rootB);
+		int nbOfTokens;
+		int[][] distance = new int[listA.size() + 1][listB.size() + 1];
+		distance[0][0] = 0;
+
+		int delete, insert, update;
+
+		for (int i = 1; i <= listA.size(); i++) {
+			nbOfTokens = listA.get(i - 1).getTextContent().split("\\s+").length;
+			if (stringContainedIn(listA.get(i - 1), listB))
+				distance[i][0] = distance[i - 1][0] + deleteContained;
+			else
+				distance[i][0] = distance[i - 1][0] + nbOfTokens * contentTokenCost;
+		}
+		for (int j = 1; j <= listB.size(); j++) {
+			nbOfTokens = listB.get(j-1).getTextContent().split("\\s+").length;
+			if (stringContainedIn(listB.get(j - 1), listA))
+				distance[0][j] = distance[0][j - 1] + insertContained;
+			else
+				distance[0][j] = distance[0][j - 1] + nbOfTokens * contentTokenCost;
+		}
+		for (int i = 1; i <= listA.size(); i++) {
+			for (int j = 1; j <= listB.size(); j++) {
+				update = distance[i - 1][j - 1] + (int) EDStrings(listA.get(i-1).getTextContent().split("\\s+"),
+						listB.get(j-1).getTextContent().split("\\s+")).get(0);
+
+				if (update <= distance[i - 1][j]) {
+					if (update <= distance[i][j - 1]) {
+						distance[i][j] = update;
+
+						// System.out.println("Update " + i + " " + j);
+					} else {
+						if (stringContainedIn(listB.get(j - 1), listA))
+							insert = distance[i][j - 1] + insertContained;
+						else {
+							nbOfTokens = listB.get(j - 1).getTextContent().split("\\s+").length;
+							insert = distance[i][j - 1] + nbOfTokens * contentTokenCost;
+						}
+						// System.out.println("Insert at "+ (i-1) + " " + j + " " + distance[i-1][j]);
+						if (insert < update) {
+							distance[i][j] = insert;
+
+						} else {
+							distance[i][j] = update;
+
+						}
+					}
+
+				} else {
+					if (stringContainedIn(listA.get(i-1), listB))
+						delete = distance[i - 1][j] + deleteContained;
+					else {
+						nbOfTokens = listA.get(i - 1).getTextContent().split("\\s+").length;
+						delete = distance[i - 1][j] + nbOfTokens * contentTokenCost;
+					}
+
+					if (delete <= distance[i][j - 1]) {
+						if (delete <= update) {
+							distance[i][j] = delete;
+
+						} else {
+							distance[i][j] = update;
+
+						}
+					} else {
+						if (stringContainedIn(listB.get(j-1), listA))
+							insert = distance[i][j - 1] + insertContained;
+						else {
+							nbOfTokens = listB.get(j - 1).getTextContent().split("\\s+").length;
+							insert = distance[i][j - 1] + nbOfTokens * contentTokenCost;
+						}
+
+						if (insert < update) {
+							if (insert < delete) {
+								distance[i][j] = insert;
+
+							} else {
+								distance[i][j] = delete;
+
+							}
+						} else {
+							if (delete < update) {
+								distance[i][j] = delete;
+
+							} else {
+								distance[i][j] = update;
+
+							}
+						}
+					}
+				}
+
+			}
+		}
+		System.out.println("EDNodeContent: ");
+		for (int i = 0; i <= listA.size(); i++) {
+			for (int j = 0; j <= listB.size(); j++)
+				System.out.print(distance[i][j] + " ");
+			System.out.println();
+		}
+		arl.add(distance[listA.size()][listB.size()]);
+
+		return arl;
+	}
 	
 
 	private static ArrayList<Info7> getEditScript(int m, int n, ArrayList<Object>[][] pointers, int[][] dist, String r1,
