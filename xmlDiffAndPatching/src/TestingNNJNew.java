@@ -1,22 +1,14 @@
 
 import java.io.File;
-import java.sql.Savepoint;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -26,8 +18,8 @@ import org.w3c.dom.NodeList;
 public class TestingNNJNew {
 
 	public static void main(String[] args) throws Exception {
-		String f1 = "E1_A.xml";
-		String f2 = "E3_C.xml";
+		String f1 = "E2_A.xml";
+		String f2 = "E2_B.xml";
 		File file = new File(f1);
 		File file2 = new File(f2);
 
@@ -70,8 +62,8 @@ public class TestingNNJNew {
 		
 //		NNJ.editScriptToXML((ArrayList<NNJ.XYZ>) nnj.get(1), file, file2,root2,1);
 		
-//		System.out.println("Distance = "+NNJ.TEDandEditScript(f1, f2));
-		NNJ.applyPatchXML(f1, "PATCH_E1_A.xml_E3_C.xml_0.1_12.xml");
+		System.out.println("Distance = "+NNJ.TEDandEditScript(f1, f2));
+//		NNJ.applyPatchXML(f1, "PATCH_E1_A.xml_E3_C.xml_0.1_12.xml");
 		// NodeList staffList = root.getChildNodes();
 		// hhhhh
 		// se
@@ -88,7 +80,7 @@ public class TestingNNJNew {
 			System.out.print("{");
 			NamedNodeMap att = node.getAttributes();
 			for (int i = 0; att != null && i < att.getLength(); i++) {
-				System.out.print(att.item(i).getNodeName() + ", "+att.item(i).getNodeValue());
+				System.out.print(att.item(i).getNodeName() + ": "+att.item(i).getNodeValue());
 			}
 			System.out.print("}");
 		}

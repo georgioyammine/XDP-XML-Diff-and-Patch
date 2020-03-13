@@ -52,30 +52,25 @@ public class TestingContentStrings {
 		print(root2, 0);
 		System.out.println();
 		
-		
-		ArrayList<Object> arl = XMLDiffAndPatch.EDAttr(root.getAttributes(), root2.getAttributes());
+	
+		ArrayList<Node> a1 = Util.getArlFromNNM(root.getAttributes());
+		ArrayList<Node> a2 = Util.getArlFromNNM(root2.getAttributes());
+		XMLDiffAndPatch.reorder(a1, a2);
+		ArrayList<Object> arl = XMLDiffAndPatch.EDAttr(Util.getArlFromNNM(root.getAttributes()), Util.getArlFromNNM(root2.getAttributes()));
 		System.out.println(arl.get(0));
 		ArrayList<XMLDiffAndPatch.Info5> ES = 
 				XMLDiffAndPatch.getESfromEDNodeOrAtt((XMLDiffAndPatch.Info5[][])arl.get(1));
 		
-		System.out.println(ES);
+		System.out.println("ES"+ES);
 //		System.out.println(XMLDiffAndPatch.fo));
-		System.out.println(XMLDiffAndPatch.formatEDAttr(ES, root.getAttributes(), root2.getAttributes()));
+		System.out.println(XMLDiffAndPatch.formatEDAttr(ES, a1,a2));
 		
 //		System.out.println(root.getAttributes().getLength());
 //		document.renameNode(root.getAttributes().item(0),null,"job");
 //		System.out.println(root.getAttributes().getLength());
 //		System.out.println(root.getAttributes().item(0));
 //		document.renameNode(root.getAttributes().item(1),null,"xed");
-		NamedNodeMap r1 =  root.getAttributes();
-		ArrayList<Node> eltsA = new ArrayList<>();
-		ArrayList<Node> eltsB = new ArrayList<>();
-		for(int i=0;i<r1.getLength();i++) {
-			Node a = document.importNode(r1.item(i),false);
-			
-			eltsA.add(0,a); 
-		}
-		System.out.println(eltsA);
+
 		
 	}
 

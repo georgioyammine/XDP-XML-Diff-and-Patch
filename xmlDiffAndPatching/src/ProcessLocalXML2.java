@@ -46,7 +46,7 @@ public class ProcessLocalXML2 {
 		System.out.println();
 		print(root2,0);
 		System.out.println();
-		System.out.println(NNJ.containedIn(A2, root,true));
+//		System.out.println(NNJ.containedIn(A2, root,true));
 		System.out.println(A2);
 		// NodeList staffList = root.getChildNodes();
 		// hhhhh

@@ -3,6 +3,11 @@ import java.io.File;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -13,43 +18,55 @@ import org.w3c.dom.NodeList;
 public class TestingNNJ {
 
 	public static void main(String[] args) throws Exception {
-		File file = new File("Ex1_A.xml");
+		String f1 = "sample1.xml";
+		String f2 = "sampleDoc (original).xml";
+		File file = new File(f1);
+		File file2 = new File(f2);
 
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 		DocumentBuilder db = dbf.newDocumentBuilder();
-		
+
 		Document document = db.parse(file);
 		document.getDocumentElement().normalize();
 		Element root = document.getDocumentElement();
-		
+
 		clean(root);
-		Node A1 = root.getChildNodes().item(0);
-		
-		
-		File file2 = new File("Ex1_B.xml");
+		// System.out.println(root.getChildNodes().item(0));
+		// Node A1 = root.getChildNodes().item(0);
 
 		DocumentBuilderFactory dbf2 = DocumentBuilderFactory.newInstance();
 		dbf2.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 		DocumentBuilder db2 = dbf2.newDocumentBuilder();
-		
+
 		Document document2 = db2.parse(file2);
 		document2.getDocumentElement().normalize();
 		Element root2 = document2.getDocumentElement();
-		
+
 		clean(root2);
 		Node A2 = root2.getChildNodes().item(0);
-		
-		
-		
+
 		print(root, 0);
 		System.out.println();
-		print(root2,0);
+		print(root2, 0);
 		System.out.println();
-		System.out.println(NNJ.TED(root, root2));
+//		ArrayList<Object> nnj = NNJ.TED(root, root2, "A", "B");
+//		System.out.println(nnj);
+//		// System.out.println(nnj.get(2));
+//		ArrayList<String> fes = NNJ.formatEditScipt((ArrayList<NNJ.XYZ>) nnj.get(1));
+//		System.out.println(fes);
+
+//		Node c = NNJ.applyPatch(fes, root, root2);
+//		WriteXMLtoFile(c, "patched" + file.getName().substring(0, file.getName().indexOf(".")) + "&"
+//				+ file2.getName().substring(0, file.getName().indexOf(".")) + ".xml");
+		
+//		NNJ.editScriptToXML((ArrayList<NNJ.XYZ>) nnj.get(1), file, file2,root2,1);
+		
+//		System.out.println("Distance = "+NNJ.TEDandEditScript(f1, f2));
+		NNJ.applyPatchXML(f1, "PATCH_sample1.xml_sampleDoc (original).xml_0.1_2.xml");
 		// NodeList staffList = root.getChildNodes();
 		// hhhhh
-		//se
+		// se
 		// se
 
 	}
@@ -58,12 +75,12 @@ public class TestingNNJ {
 		for (int i = 0; i < depth; i++) {
 			System.out.print("  ");
 		}
-		System.out.print(node.getNodeName() + " ");
+		System.out.print(node.getNodeName()+" ");
 		if (node.getNodeType() != Node.TEXT_NODE) {
 			System.out.print("{");
 			NamedNodeMap att = node.getAttributes();
 			for (int i = 0; att != null && i < att.getLength(); i++) {
-				System.out.print(att.item(i) + ", ");
+				System.out.print(att.item(i).getNodeName() + ", "+att.item(i).getNodeValue());
 			}
 			System.out.print("}");
 		}
@@ -96,4 +113,39 @@ public class TestingNNJ {
 				node.removeChild(child);
 		}
 	}
+
+	
+
+	public static void WriteXMLtoFile(Node root, String fileName) {
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.newDocument();
+
+			Node rootC = doc.importNode(root, true);
+			doc.appendChild(rootC);
+
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transf = transformerFactory.newTransformer();
+
+			transf.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			transf.setOutputProperty(OutputKeys.INDENT, "yes");
+			transf.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+	
+			DOMSource source = new DOMSource(doc);
+
+			File myFile = new File(fileName);
+
+			StreamResult console = new StreamResult(System.out);
+			StreamResult filen = new StreamResult(myFile);
+			
+			transf.transform(source, console);
+			transf.transform(source, filen);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
 }

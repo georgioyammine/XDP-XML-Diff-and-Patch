@@ -10,22 +10,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.zip.CRC32;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -33,19 +29,17 @@ public class XMLDiffAndPatch {
 	final static int updateRootName = 1;
 	final static int insertContained = 1;
 	final static int deleteContained = 1;
-	final static int deleteOrInsertLeaf = 1;
-	final static int attributeNameCost = 4;
+	final static int deleteOrInsertLeaf = 1; //3 
+	final static int attributeNameCost = 1;  //2
 	final static int attributeValueCost = 1;
 	final static int contentTokenCost = 1;
 	static HashMap<Node, Integer> costsOfTrees = new HashMap<>();
 
 	private static ArrayList<Node> TreesInA = new ArrayList<>();
 	private static ArrayList<Node> TreesInB = new ArrayList<>();
-	private static String randomDelete = "jci8ElHvLDr6DKejR7ng";
+//	private static String randomDelete = "jci8ElHvLDr6DKejR7ng";
 	static double version = 0.1;
 
-	private static ArrayList<Node> newListA = new ArrayList<Node>();
-	private static ArrayList<Node> newListB = new ArrayList<Node>();
 	private static class Info7 {
 		int x, y, nx, ny, z;
 		String a, b;
@@ -85,12 +79,13 @@ public class XMLDiffAndPatch {
 
 		clean(rootA);
 		clean(rootB);
-
+		
 		getTreesInA(rootA); // pre-processing
 		getTreesInB(rootB); // pre-processing
 
 		NodeList listA = rootA.getChildNodes();
 		NodeList listB = rootB.getChildNodes();
+		
 
 		int m = listA.getLength();
 		int n = listB.getLength();
@@ -118,7 +113,7 @@ public class XMLDiffAndPatch {
 			ins.add(new Info7(R1, R2, 0, j - 1, 0, j, dist[0][j]));
 			pointers[0][j] = ins;
 		}
-
+		
 		for (int i = 1; i <= m; i++) {
 			for (int j = 1; j <= n; j++) {
 				// System.out.println(rootA.getChildNodes().item(i-1));
@@ -181,37 +176,7 @@ public class XMLDiffAndPatch {
 		// results.add(2,fes);
 		return results;
 	}
-	public static int contains(Node a, ArrayList<Node> listB) {
-		for(int i = 0; i<listB.size();i++) {
-			if(a.getNodeName().equals((listB.get(i).getNodeName())))
-				return i;
-		}
-		return -1;
-	}
 	
-	public static void reorder(ArrayList<Node> listA, ArrayList<Node> listB) {
-		for(int i = 0;i<listA.size();) {
-			int j = contains(listA.get(i),listB);
-			if(j != -1) {
-				newListA.add(listA.get(i));
-				newListB.add(listB.get(j));
-				listA.remove(i);
-				listB.remove(j);
-			}
-			else
-				i++;
-		}
-		while(listA.size()>0)
-			newListA.add(listA.remove(0));
-		
-		while(listB.size()>0) {
-			newListB.add(listB.remove(0));
-			
-		}
-		System.out.println(newListA);
-		System.out.print(newListB);
-	}
-
 
 	private static ArrayList<Info7> getEditScript(int m, int n, ArrayList<Object>[][] pointers, int[][] dist, String r1,
 			String r2) {
@@ -282,7 +247,7 @@ public class XMLDiffAndPatch {
 		document2.getDocumentElement().normalize();
 		Element root2 = document2.getDocumentElement();
 
-		ArrayList<Object> nnj = XMLDiffAndPatch.TED(root, root2, "A", "B", false);
+		ArrayList<Object> nnj = XMLDiffAndPatch.TED(root, root2, "A", "B", true);
 
 		int distance = (Integer) nnj.get(0);
 		editScriptToXML((ArrayList<XMLDiffAndPatch.Info7>) nnj.get(1), file, file2, root2, distance);
@@ -401,45 +366,80 @@ public class XMLDiffAndPatch {
 			cost += updateRootName;
 
 		// update attributs
-		// insert rami ted
+		cost+= (int)EDAttr(Util.getArlFromNNM(rootA.getAttributes()),Util.getArlFromNNM(rootB.getAttributes())).get(0);
 
 		// update content
-		// insert rami ted
+//		System.out.println("--->"+rootA+" "+rootB+"Content"+(int)EDStrings(getFirstLevelTextContent(rootA).split("\\s+"), getFirstLevelTextContent(rootB).split("\\s+")).get(0));
+//		cost+= (int)EDStrings(getFirstLevelTextContent(rootA).split("\\s+"), getFirstLevelTextContent(rootB).split("\\s+")).get(0);
 
 		return cost;
 	}
+	
+//	public static String getFirstLevelTextContent(Node node) {
+//	    NodeList list = node.getChildNodes();
+//	    StringBuilder textContent = new StringBuilder();
+//	    for (int i = 0; i < list.getLength(); ++i) {
+//	        Node child = list.item(i);
+//	        if (child.getNodeType() == Node.TEXT_NODE)
+//	            textContent.append(child.getTextContent()+" ");
+//	    }
+//	    System.out.println("YXT"+textContent.toString());
+//	    return textContent.toString();
+//	}
+	
+	public static ArrayList<Node> getTextChildNode(Node node) {
+        NodeList list = node.getChildNodes();
+        ArrayList<Node> listNode = new ArrayList<Node>();
+        for (int i = 0; i < list.getLength(); ++i) {
+            Node child = list.item(i);
+            if (child.getNodeType() == Node.TEXT_NODE) 
+            	listNode.add(child);
+        }
+        return listNode;
+    }
+	
+	public static ArrayList<Node> getNotTextChildNode(Node node) {
+        NodeList list = node.getChildNodes();
+        ArrayList<Node> listNode = new ArrayList<Node>();
+        for (int i = 0; i < list.getLength(); ++i) {
+            Node child = list.item(i);
+            if (child.getNodeType() != Node.TEXT_NODE)
+                listNode.add(child);
+        }
+        return listNode;
+    }
 
-	public static ArrayList<Object> EDAttr(NamedNodeMap attrA, NamedNodeMap attrB) {
+	public static ArrayList<Object> EDAttr(ArrayList<Node> attrA, ArrayList<Node> attrB) {
+		reorder(attrA, attrB);
+		System.out.println(attrA);
+		System.out.println(attrB);
 		ArrayList<Object> arl = new ArrayList<>();
-		int[][] distance = new int[attrA.getLength() + 1][attrB.getLength() + 1];
+		int[][] distance = new int[attrA.size() + 1][attrB.size() + 1];
 		distance[0][0] = 0;
-		Info5[][] pointers = new Info5[attrA.getLength() + 1][attrB.getLength() + 1];
+		Info5[][] pointers = new Info5[attrA.size() + 1][attrB.size() + 1];
 		pointers[0][0] = new Info5(-1, -1, 0, 0, 0);
 		
 		int insert = Integer.MAX_VALUE;
 		int delete = Integer.MAX_VALUE;
 		int update = Integer.MAX_VALUE;
 
-		for (int i = 1; i <= attrA.getLength(); i++) {
-			distance[i][0] = distance[i - 1][0] + (attrB.getNamedItem(attrA.item(i-1).getNodeName())==null?attributeNameCost:0)
-											+ attributeValueCost;
+		for (int i = 1; i <= attrA.size(); i++) {
+			distance[i][0] = distance[i - 1][0] + attributeNameCost + attributeValueCost;
 			pointers[i][0] = new Info5(i - 1, 0, i, 0, distance[i][0]);
 		}
-		for (int j = 1; j <= attrB.getLength(); j++) {
-			distance[0][j] = distance[0][j - 1] + (attrA.getNamedItem(attrB.item(j-1).getNodeName())==null?attributeNameCost:0) 
-											+ attributeValueCost;
+		for (int j = 1; j <= attrB.size(); j++) {
+			distance[0][j] = distance[0][j - 1] + attributeNameCost + attributeValueCost;
 			pointers[0][j] = new Info5(0, j - 1, 0, j, distance[0][j]);
 		}
-		for (int i = 1; i <= attrA.getLength(); i++) {
-			for (int j = 1; j <= attrB.getLength(); j++) {
-				update = distance[i - 1][j - 1] + CostUpdateAttr(attrA.item(i - 1), attrB.item(j - 1),attrA);
+		for (int i = 1; i <= attrA.size(); i++) {
+			for (int j = 1; j <= attrB.size(); j++) {
+				update = distance[i - 1][j - 1] + CostUpdateAttr(attrA.get(i - 1), attrB.get(j - 1),attrA);
 				if (update <= distance[i - 1][j]) {
 					if (update <= distance[i][j - 1]) {
 						distance[i][j] = update;
 						pointers[i][j] = new Info5(i - 1, j - 1, i, j, update);
 					} else {
-						insert = distance[i][j-1] + (attrA.getNamedItem(attrB.item(j-1).getNodeName())==null?attributeNameCost:0) 
-								+ attributeValueCost;
+						insert = distance[i][j-1] + attributeNameCost + attributeValueCost;
 						
 						if (insert < update) {
 							distance[i][j] = insert;
@@ -452,8 +452,7 @@ public class XMLDiffAndPatch {
 					}
 
 				} else {
-					delete = distance[i - 1][j] + (attrB.getNamedItem(attrA.item(i-1).getNodeName())==null?attributeNameCost:0)
-							+ attributeValueCost;
+					delete = distance[i - 1][j] + attributeNameCost + attributeValueCost;
 					if (delete <= distance[i][j - 1]) {
 						if (delete <= update) {
 							distance[i][j] = delete;
@@ -464,8 +463,7 @@ public class XMLDiffAndPatch {
 							pointers[i][j] = new Info5(i - 1, j - 1, i, j, update);
 						}
 					} else {
-						insert = distance[i][j-1] + (attrA.getNamedItem(attrB.item(j-1).getNodeName())==null?attributeNameCost:0) 
-								+ attributeValueCost;
+						insert = distance[i][j-1] + attributeNameCost + attributeValueCost;
 
 						if (insert < update) {
 							if (insert < delete) {
@@ -491,18 +489,43 @@ public class XMLDiffAndPatch {
 
 			}
 		}
-		for (int i = 0; i <= attrA.getLength(); i++) {
-			for (int j = 0; j <= attrB.getLength(); j++)
+		for (int i = 0; i <= attrA.size(); i++) {
+			for (int j = 0; j <= attrB.size(); j++)
 				System.out.print(distance[i][j] + " ");
 			System.out.println();
 		}
-		arl.add(distance[attrA.getLength()][attrB.getLength()]);
+		arl.add(distance[attrA.size()][attrB.size()]);
 		arl.add(pointers);
 //		return distance[attrA.getLength()][attrB.getLength()];
 		return arl;
 	}
 	
-	public static ArrayList<String> formatEDAttr(ArrayList<Info5> tokens, NamedNodeMap attrA, NamedNodeMap attrB) {
+	public static void reorder(ArrayList<Node> listA, ArrayList<Node> listB) {
+		ArrayList<Node> newListA = new ArrayList<>();
+		ArrayList<Node> newListB = new ArrayList<>();
+		for(int i = 0;i<listA.size();) {
+			int j = Util.contains(listA.get(i),listB);
+			if(j != -1) {
+				newListA.add(listA.get(i));
+				newListB.add(listB.get(j));
+				listA.remove(i);
+				listB.remove(j);
+			}
+			else
+				i++;
+		}
+		while(listA.size()>0)
+			newListA.add(listA.remove(0));
+		
+		while(listB.size()>0) 
+			newListB.add(listB.remove(0));
+		
+		listA.addAll(newListA);
+		listB.addAll(newListB);
+	}
+
+	
+	public static ArrayList<String> formatEDAttr(ArrayList<Info5> tokens, ArrayList<Node> attrA, ArrayList<Node> attrB) {
 		ArrayList<String> arl = new ArrayList<>();
 		for (Info5 token : tokens) {
 			String str = "";
@@ -514,16 +537,16 @@ public class XMLDiffAndPatch {
 //				+ "with attribute from" + token.ny; 
 				
 				Info5 updates = getUpdateAttrScript(token,attrA,attrB);
-				str = "Update at attribute "+token.nx+" exanchge "+
-				(updates.x==-5?"Name to "+attrB.item(token.ny-1).getNodeName()+" " :" ")+
-				(updates.y==-5?"Value to "+attrB.item(token.ny-1).getNodeValue()+" ":" ");
+				str = "Update attribute "+attrA.get(token.nx-1).getNodeName()+" exanchge "+
+				(updates.x==-5?"Name to "+attrB.get(token.ny-1).getNodeName()+" " :" ")+
+				(updates.y==-5?"Value to "+attrB.get(token.ny-1).getNodeValue()+" ":" ");
 				
 			} else {
 				if (token.x + 1 == token.nx && token.y == token.ny) {
 					str = "Delete " + token.nx;
 				} else {
 					if (token.x == token.nx && token.y + 1 == token.ny) {
-						str = "Insert " +" at "+ token.ny +" "+attrB.item(token.ny-1)+" ";
+						str = "Insert " +" at "+ token.ny +" "+attrB.get(token.ny-1)+" ";
 					}
 				}
 			}
@@ -533,10 +556,10 @@ public class XMLDiffAndPatch {
 		
 	}
 
-	private static Info5 getUpdateAttrScript(Info5 token, NamedNodeMap attrA, NamedNodeMap attrB) {
+	private static Info5 getUpdateAttrScript(Info5 token, ArrayList<Node> attrA, ArrayList<Node> attrB) {
 		int x = token.z;
-		Node a = attrA.item(token.nx-1);
-		Node b = attrB.item(token.ny-1);
+		Node a = attrA.get(token.nx-1);
+		Node b = attrB.get(token.ny-1);
 		
 		
 		Info5 upd = new Info5(-2, -2, token.nx, token.ny, token.z);
@@ -553,7 +576,9 @@ public class XMLDiffAndPatch {
 		return upd;
 	}
 
-	public static ArrayList<Object> EDNodeValue(String[] rootAContent, String[] rootBContent) {
+	public static ArrayList<Object> EDStrings(String[] rootAContent, String[] rootBContent) {
+		System.out.println(Arrays.toString(rootAContent));
+		System.out.println(Arrays.toString(rootBContent));
 		ArrayList<Object> arl = new ArrayList<>();
 		int[][] distance = new int[rootAContent.length + 1][rootBContent.length + 1];
 		distance[0][0] = 0;
@@ -636,6 +661,8 @@ public class XMLDiffAndPatch {
 		return arl;
 	}
 
+	
+	
 	public static ArrayList<Info5> getESfromEDNodeOrAtt(Info5[][] pointers) {
 		ArrayList<Info5> ESContent = new ArrayList<>();
 
@@ -693,7 +720,7 @@ public class XMLDiffAndPatch {
 			return contentTokenCost;
 	}
 
-	private static int CostUpdateAttr(Node attrA, Node attrB,NamedNodeMap attrsA) {
+	private static int CostUpdateAttr(Node attrA, Node attrB,ArrayList<Node> attrA2) {
 
 		if (attrA.getNodeName().equals(attrB.getNodeName())) {
 			if (attrA.getTextContent().equals(attrB.getTextContent()))
@@ -701,7 +728,7 @@ public class XMLDiffAndPatch {
 			else
 				return attributeValueCost;
 		} else {
-			if(attrsA.getNamedItem(attrB.getNodeName())!=null) {
+			if(Util.contains(attrB,attrA2)!=-1) {
 				return Integer.MAX_VALUE/2;
 			}
 			if (attrA.getTextContent().equals(attrB.getTextContent()))
@@ -854,7 +881,7 @@ public class XMLDiffAndPatch {
 
 	public static String applyPatchXML(String fileName, String ESXML) throws Exception {
 		try {
-			randomDelete = "A" + getAlphaNumericString(9);
+//			randomDelete = "A" + getAlphaNumericString(9);
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.newDocument();
@@ -1066,6 +1093,7 @@ public class XMLDiffAndPatch {
 					doc.renameNode(rc, rb.getNamespaceURI(), rb.getNodeName());
 
 				}
+				scan.close();
 			}
 			for (String es : ES) {
 				Scanner scan = new Scanner(es);
@@ -1083,6 +1111,7 @@ public class XMLDiffAndPatch {
 					// temp.setNodeValue("BxvD8Xdlq0O8ejTS"); // value for delete
 					temp.removeChild(temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
 				}
+				scan.close();				
 			}
 
 			for (String es : ES) {
@@ -1107,7 +1136,7 @@ public class XMLDiffAndPatch {
 					temp.insertBefore(toInsert, temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
 
 				}
-
+				scan.close();
 			}
 			return rootC;
 		} catch (Exception e) {
@@ -1151,50 +1180,6 @@ public class XMLDiffAndPatch {
 		}
 		inputStream.close();
 		return crc.getValue();
-	}
-
-	private static String getAlphaNumericString(int n) {
-
-		// chose a Character random from this String
-		String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789" + "abcdefghijklmnopqrstuvxyz";
-
-		// create StringBuffer size of AlphaNumericString
-		StringBuilder sb = new StringBuilder(n);
-
-		for (int i = 0; i < n; i++) {
-
-			// generate a random number between
-			// 0 to AlphaNumericString variable length
-			int index = (int) (AlphaNumericString.length() * Math.random());
-
-			// add Character one by one in end of sb
-			sb.append(AlphaNumericString.charAt(index));
-		}
-
-		return sb.toString();
-	}
-
-	private static void print(Node node, int depth) {
-		for (int i = 0; i < depth; i++) {
-			System.out.print("  ");
-		}
-		System.out.print(node.getNodeName() + " ");
-		if (node.getNodeType() != Node.TEXT_NODE) {
-			System.out.print("{");
-			NamedNodeMap att = node.getAttributes();
-			for (int i = 0; att != null && i < att.getLength(); i++) {
-				System.out.print(att.item(i).getNodeName() + ", " + att.item(i).getNodeValue());
-			}
-			System.out.print("}");
-		}
-
-		System.out.println(node.getNodeValue() == null ? "" : node.getNodeValue());
-
-		NodeList list = node.getChildNodes();
-		for (int i = 0; i < list.getLength(); i++) {
-			// clean(list.item(i));
-			print(list.item(i), depth + 1);
-		}
 	}
 
 }

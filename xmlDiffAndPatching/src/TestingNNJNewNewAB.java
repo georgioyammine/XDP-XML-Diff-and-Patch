@@ -1,6 +1,5 @@
 
 import java.io.File;
-import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,12 +15,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class TestingContentStringsOld {
+public class TestingNNJNewNewAB {
 
 	public static void main(String[] args) throws Exception {
-
-		String f1 = "att1.xml";
-		String f2 = "att2.xml";
+		String f1 = "testNewA.xml";
+		String f2 = "testNewB.xml";
 		File file = new File(f1);
 		File file2 = new File(f2);
 
@@ -46,28 +44,40 @@ public class TestingContentStringsOld {
 		Element root2 = document2.getDocumentElement();
 
 		clean(root2);
+		Node A2 = root2.getChildNodes().item(0);
 
 		print(root, 0);
 		System.out.println();
 		print(root2, 0);
 		System.out.println();
+//		ArrayList<Object> nnj = NNJ.TED(root, root2, "A", "B");
+//		System.out.println(nnj);
+//		// System.out.println(nnj.get(2));
+//		ArrayList<String> fes = NNJ.formatEditScipt((ArrayList<NNJ.XYZ>) nnj.get(1));
+//		System.out.println(fes);
+
+//		Node c = NNJ.applyPatch(fes, root, root2);
+//		WriteXMLtoFile(c, "patched" + file.getName().substring(0, file.getName().indexOf(".")) + "&"
+//				+ file2.getName().substring(0, file.getName().indexOf(".")) + ".xml");
 		
+//		NNJ.editScriptToXML((ArrayList<NNJ.XYZ>) nnj.get(1), file, file2,root2,1);
 		
-		ArrayList<Object> arl = XMLDiffAndPatchOld.EDAttr(root.getAttributes(), root2.getAttributes());
-		System.out.println(arl.get(0));
-		ArrayList<XMLDiffAndPatchOld.Info5> ES = 
-				XMLDiffAndPatchOld.getESfromEDNodeOrAtt((XMLDiffAndPatchOld.Info5[][])arl.get(1));
-		
-		System.out.println("ES"+ES);
-//		System.out.println(XMLDiffAndPatch.fo));
-		System.out.println(XMLDiffAndPatchOld.formatEDAttr(ES, root.getAttributes(), root2.getAttributes()));
-		
-//		System.out.println(root.getAttributes().getLength());
-//		document.renameNode(root.getAttributes().item(0),null,"job");
-//		System.out.println(root.getAttributes().getLength());
-//		System.out.println(root.getAttributes().item(0));
-//		document.renameNode(root.getAttributes().item(1),null,"xed");
-		System.out.println("OLD");
+//		System.out.println("Distance = "+XMLDiffAndPatch.TEDandEditScript(f1, f2));
+//		NNJ.applyPatchXML(f1, "PATCH_E1_A.xml_E3_C.xml_0.1_12.xml");
+		// NodeList staffList = root.getChildNodes();
+		// hhhhh
+		// se
+		// se
+//		System.out.println();
+//		print(root,0);
+//		root.setTextContent("TEST");
+//		System.out.println();
+//		document.createTextNode(data)
+//		print(root,0);
+		System.out.println(root.getChildNodes().item(0).getChildNodes().item(1).getChildNodes().item(0));
+		System.out.println(root.getChildNodes().item(0).getChildNodes().item(1).getChildNodes().item(1));
+		System.out.println(root.getChildNodes().item(0).getChildNodes().item(1).getChildNodes().item(2));
+
 	}
 
 	private static void print(Node node, int depth) {
@@ -79,7 +89,7 @@ public class TestingContentStringsOld {
 			System.out.print("{");
 			NamedNodeMap att = node.getAttributes();
 			for (int i = 0; att != null && i < att.getLength(); i++) {
-				System.out.print("["+att.item(i).getNodeName() + ": "+att.item(i).getNodeValue()+ "], ");
+				System.out.print(att.item(i).getNodeName() + ": "+att.item(i).getNodeValue());
 			}
 			System.out.print("}");
 		}
@@ -146,5 +156,5 @@ public class TestingContentStringsOld {
 		}
 
 	}
-	
+
 }

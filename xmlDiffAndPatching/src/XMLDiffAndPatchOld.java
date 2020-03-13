@@ -16,7 +16,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
@@ -1062,6 +1061,7 @@ public class XMLDiffAndPatchOld {
 					doc.renameNode(rc, rb.getNamespaceURI(), rb.getNodeName());
 
 				}
+				scan.close();
 			}
 			for (String es : ES) {
 				Scanner scan = new Scanner(es);
@@ -1079,6 +1079,7 @@ public class XMLDiffAndPatchOld {
 					// temp.setNodeValue("BxvD8Xdlq0O8ejTS"); // value for delete
 					temp.removeChild(temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
 				}
+				scan.close();
 			}
 
 			for (String es : ES) {
@@ -1103,7 +1104,7 @@ public class XMLDiffAndPatchOld {
 					temp.insertBefore(toInsert, temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
 
 				}
-
+				scan.close();
 			}
 			return rootC;
 		} catch (Exception e) {
