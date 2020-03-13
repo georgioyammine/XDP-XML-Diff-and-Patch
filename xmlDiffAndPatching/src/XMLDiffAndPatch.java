@@ -44,6 +44,8 @@ public class XMLDiffAndPatch {
 	private static String randomDelete = "jci8ElHvLDr6DKejR7ng";
 	static double version = 0.1;
 
+	private static ArrayList<Node> newListA = new ArrayList<Node>();
+	private static ArrayList<Node> newListB = new ArrayList<Node>();
 	private static class Info7 {
 		int x, y, nx, ny, z;
 		String a, b;
@@ -179,6 +181,37 @@ public class XMLDiffAndPatch {
 		// results.add(2,fes);
 		return results;
 	}
+	public static int contains(Node a, ArrayList<Node> listB) {
+		for(int i = 0; i<listB.size();i++) {
+			if(a.getNodeName().equals((listB.get(i).getNodeName())))
+				return i;
+		}
+		return -1;
+	}
+	
+	public static void reorder(ArrayList<Node> listA, ArrayList<Node> listB) {
+		for(int i = 0;i<listA.size();) {
+			int j = contains(listA.get(i),listB);
+			if(j != -1) {
+				newListA.add(listA.get(i));
+				newListB.add(listB.get(j));
+				listA.remove(i);
+				listB.remove(j);
+			}
+			else
+				i++;
+		}
+		while(listA.size()>0)
+			newListA.add(listA.remove(0));
+		
+		while(listB.size()>0) {
+			newListB.add(listB.remove(0));
+			
+		}
+		System.out.println(newListA);
+		System.out.print(newListB);
+	}
+
 
 	private static ArrayList<Info7> getEditScript(int m, int n, ArrayList<Object>[][] pointers, int[][] dist, String r1,
 			String r2) {
