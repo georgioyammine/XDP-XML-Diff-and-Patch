@@ -77,7 +77,7 @@ public class Util {
 		}
 
 	}
-	private static boolean stringContainedIn(Node rootA, ArrayList<Node> listB) {
+	public static boolean stringContainedIn(Node rootA, ArrayList<Node> listB) {
 		String[] arr = rootA.getTextContent().split("\\s+");
 		for (int i = 0; i < listB.size(); i++) {
 			String[] arr2 = listB.get(i).getTextContent().split("\\s+");
