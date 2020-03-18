@@ -130,26 +130,46 @@ public class XMLDiffAndPatch {
 				// +" "+(CostInsertTree(rootB))
 				// );
 
-				int update = Integer.MAX_VALUE / 2;
+//				int update = Integer.MAX_VALUE / 2;
 				boolean text = false;
 				ArrayList<Object> updateInfo = new ArrayList<>();
-				if (listA.item(i - 1).getNodeType() == listB.item(j - 1).getNodeType()) {
-					// update is possible
-					if (listA.item(i - 1).getNodeType() == Node.TEXT_NODE) {
-						updateInfo = EDStrings(listA.item(i - 1).getTextContent().split("\\s+"),
-								listB.item(j - 1).getTextContent().split("\\s+"));
-						text = true;
-
-					} else {
-						updateInfo = TED(listA.item(i - 1), listB.item(j - 1), R1 + i, R2 + j, false);
-					}
-					update = dist[i - 1][j - 1] + (int) updateInfo.get(0);
-				}
-
 				int delete = dist[i - 1][j] + CostDeleteTree(rootA.getChildNodes().item(i - 1));
-				int insert = dist[i][j - 1] + CostInsertTree(rootB.getChildNodes().item(j - 1));
-				if (update < delete) {
-					if (update < insert) {
+				int insert, update;
+				if (delete <= dist[i - 1][j - 1]) {
+					if (delete <= dist[i][j - 1]) {
+						dist[i][j] = delete;
+						ArrayList<Object> del = new ArrayList<>();
+						del.add(new Info7(R1, R2, i - 1, j, i, j, dist[i][j]));
+						pointers[i][j] = del;
+					} else {
+						insert = dist[i][j - 1] + CostInsertTree(rootB.getChildNodes().item(j - 1));
+
+						if (insert < delete) {
+							dist[i][j] = insert;
+							ArrayList<Object> ins = new ArrayList<>();
+							ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
+							pointers[i][j] = ins;
+						} else {
+							dist[i][j] = delete;
+							ArrayList<Object> del = new ArrayList<>();
+							del.add(new Info7(R1, R2, i - 1, j, i, j, dist[i][j]));
+							pointers[i][j] = del;
+						}
+					}
+				} else {
+//					update = Integer.MAX_VALUE;
+
+					if (listA.item(i - 1).getNodeType() == listB.item(j - 1).getNodeType()) {
+						// update is possible
+						if (listA.item(i - 1).getNodeType() == Node.TEXT_NODE) {
+							updateInfo = EDStrings(listA.item(i - 1).getTextContent().split("\\s+"),
+									listB.item(j - 1).getTextContent().split("\\s+"));
+							text = true;
+
+						} else {
+							updateInfo = TED(listA.item(i - 1), listB.item(j - 1), R1 + i, R2 + j, false);
+						}
+						update = dist[i - 1][j - 1] + (int) updateInfo.get(0);
 						dist[i][j] = update;
 						ArrayList<Object> upd = new ArrayList<>();
 						upd.add(new Info7(R1, R2, i - 1, j - 1, i, j, dist[i][j]));
@@ -160,24 +180,53 @@ public class XMLDiffAndPatch {
 						}
 						pointers[i][j] = upd;
 					} else {
-						dist[i][j] = insert;
-						ArrayList<Object> ins = new ArrayList<>();
-						ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
-						pointers[i][j] = ins;
-					}
-				} else {
-					if (delete < insert) {
-						dist[i][j] = delete;
-						ArrayList<Object> del = new ArrayList<>();
-						del.add(new Info7(R1, R2, i - 1, j, i, j, dist[i][j]));
-						pointers[i][j] = del;
-					} else {
-						dist[i][j] = insert;
-						ArrayList<Object> ins = new ArrayList<>();
-						ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
-						pointers[i][j] = ins;
+						insert = dist[i][j - 1] + CostInsertTree(rootB.getChildNodes().item(j - 1));
+						if (insert < delete) {
+							dist[i][j] = insert;
+							ArrayList<Object> ins = new ArrayList<>();
+							ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
+							pointers[i][j] = ins;
+
+						} else {
+							dist[i][j] = delete;
+							ArrayList<Object> del = new ArrayList<>();
+							del.add(new Info7(R1, R2, i - 1, j, i, j, dist[i][j]));
+							pointers[i][j] = del;
+						}
 					}
 				}
+
+//				int insert = dist[i][j - 1] + CostInsertTree(rootB.getChildNodes().item(j - 1));
+//				if (update < delete) {
+//					if (update < insert) {
+//						dist[i][j] = update;
+//						ArrayList<Object> upd = new ArrayList<>();
+//						upd.add(new Info7(R1, R2, i - 1, j - 1, i, j, dist[i][j]));
+//						upd.add(updateInfo.get(1));
+//						if (text) {
+//							upd.add(text);
+//							upd.add(text);
+//						}
+//						pointers[i][j] = upd;
+//					} else {
+//						dist[i][j] = insert;
+//						ArrayList<Object> ins = new ArrayList<>();
+//						ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
+//						pointers[i][j] = ins;
+//					}
+//				} else {
+//					if (delete < insert) {
+//						dist[i][j] = delete;
+//						ArrayList<Object> del = new ArrayList<>();
+//						del.add(new Info7(R1, R2, i - 1, j, i, j, dist[i][j]));
+//						pointers[i][j] = del;
+//					} else {
+//						dist[i][j] = insert;
+//						ArrayList<Object> ins = new ArrayList<>();
+//						ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
+//						pointers[i][j] = ins;
+//					}
+//				}
 
 				// dist[i][j] = Math.min(Math.min(dist[i-1][j-1] + TED(listA.item(i-1),
 				// listB.item(j-1)),
@@ -206,23 +255,23 @@ public class XMLDiffAndPatch {
 		ArrayList<Object> reversedEditScript = new ArrayList<>();
 
 		int a = m, b = n;
-		while (a >-1  && b > -1 && ((Info7) (pointers[a][b].get(0))).z != 0) {
+		while (a > -1 && b > -1 && ((Info7) (pointers[a][b].get(0))).z != 0) {
 			ArrayList<Object> prev = pointers[a][b];
 			if (prev.size() > 1) {
 				if (prev.size() > 2) {
 					// adding info of update root
-					if(!((ArrayList<Object>) prev.get(1)).isEmpty()) {
-					reversedEditScript.add(prev.get(1));
-					reversedEditScript.add((Info7) prev.get(0));
+					if (!((ArrayList<Object>) prev.get(1)).isEmpty()) {
+						reversedEditScript.add(prev.get(1));
+						reversedEditScript.add((Info7) prev.get(0));
 					}
 
 				} else {
 					if (prev.size() > 3) {
-						if(!((ArrayList<Object>) prev.get(1)).isEmpty()) {
-						reversedEditScript.addAll((ArrayList<Object>) prev.get(1));
+						if (!((ArrayList<Object>) prev.get(1)).isEmpty()) {
+							reversedEditScript.addAll((ArrayList<Object>) prev.get(1));
 //						((Info7) prev.get(0)).x;
 //						((Info7) prev.get(0)).y;
-						reversedEditScript.add((Info7) prev.get(0));
+							reversedEditScript.add((Info7) prev.get(0));
 						}
 					} else {
 						// adding info of recursive call
@@ -290,7 +339,7 @@ public class XMLDiffAndPatch {
 
 		int distance = (Integer) ted.get(0);
 		Collections.reverse((List<Object>) ted.get(1));
-		editScriptToXML((ArrayList<ArrayList<Object>>) ted.get(1), file, file2,root, root2, distance);
+		editScriptToXML((ArrayList<ArrayList<Object>>) ted.get(1), file, file2, root, root2, distance);
 		return ted;
 	}
 
@@ -810,8 +859,8 @@ public class XMLDiffAndPatch {
 
 	}
 
-	private static void editScriptToXML(ArrayList<ArrayList<Object>> E, File original, File newFile, Element rootA, Element rootB, int distance)
-			throws Exception {
+	private static void editScriptToXML(ArrayList<ArrayList<Object>> E, File original, File newFile, Element rootA,
+			Element rootB, int distance) throws Exception {
 		try {
 			ArrayList<ArrayList<Object>> ES = new ArrayList<>(E);
 
@@ -865,256 +914,252 @@ public class XMLDiffAndPatch {
 			eltd = document.createElement("Delete");
 			Element elti;
 			elti = document.createElement("Insert");
-			
-			
-			for (int i = 0;i<ES.size();i++) {
+
+			for (int i = 0; i < ES.size(); i++) {
 				Object token = ES.get(i);
-				if(token.getClass()==Info7.class) {
-					
-				if (((Info7)token).x == -1) {
-					ArrayList<Object> nextToken = ES.get(i+1);
-					Element elt2 = document.createElement(((Info7)token).a + "");
-					elt2.setAttribute("type", "node");
-					if(((int)nextToken.get(0))==1) {
-						//updating Labels
-						Element label = document.createElement("Label");
-						
-						
-						String op = ((Info7)token).b + "";
-						op = op.substring(1); // removing B or Tree Name
-						Node toUpdate = document.importNode(rootB, true);
+				if (token.getClass() == Info7.class) {
 
-						while (op.length() > 0) {
-							toUpdate = toUpdate.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-							op = op.substring(1);
-						}
-					// elt.setAttribute(token.a, toUpdate.getNodeName());
-					label.setTextContent(toUpdate.getNodeName());
-					elt2.appendChild(label);
-					eltu.appendChild(elt2);
-					}
-					if(!((ArrayList)nextToken.get(1)).isEmpty()) {
-						// updating attributes
-						
-						Element attributes = document.createElement("Attributes");
-						elt2.appendChild(attributes);
-						ArrayList<Info5> tokens= (ArrayList<Info5>) nextToken.get(1);
-						
-						// getting node Axxx...
-						String op = ((Info7)token).a + "";
-						op = op.substring(1); // removing A or Tree Name
-						Node toUpdateA = document.importNode(rootA, true);
+					if (((Info7) token).x == -1) {
+						ArrayList<Object> nextToken = ES.get(i + 1);
+						Element elt2 = document.createElement(((Info7) token).a + "");
+						elt2.setAttribute("type", "node");
+						if (((int) nextToken.get(0)) == 1) {
+							// updating Labels
+							Element label = document.createElement("Label");
 
-						while (op.length() > 0) {
-							toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-							op = op.substring(1);
-						}
-						
-						// getting node Bxxx...
-						op = ((Info7)token).b + "";
-						op = op.substring(1); // removing B or Tree Name
-						Node toUpdate = document.importNode(rootB, true);
+							String op = ((Info7) token).b + "";
+							op = op.substring(1); // removing B or Tree Name
+							Node toUpdate = document.importNode(rootB, true);
 
-						while (op.length() > 0) {
-							toUpdate = toUpdate.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-							op = op.substring(1);
+							while (op.length() > 0) {
+								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+								op = op.substring(1);
+							}
+							// elt.setAttribute(token.a, toUpdate.getNodeName());
+							label.setTextContent(toUpdate.getNodeName());
+							elt2.appendChild(label);
+							eltu.appendChild(elt2);
 						}
-						ArrayList<Node> attrA = Util.getArlFromNNM(toUpdateA.getAttributes());
-						ArrayList<Node> attrB = Util.getArlFromNNM(toUpdate.getAttributes());
-						
-						reorder(attrA, attrB);
-						
-						Element updAtt = document.createElement("update_Attribute");
-						for (int k=0;k<tokens.size();) {
-							Info5 tokenA = tokens.get(k);
-							if (tokenA.x + 1 == tokenA.nx && tokenA.y + 1 == tokenA.ny) {
-								Info5 updates = getUpdateAttrScript(tokenA, attrA, attrB);
-								Element upd = document.createElement(attrA.get(tokenA.nx - 1).getNodeName());
-								Attr change = document.createAttribute("change");
-			
-								if(updates.x == -5) {
-									if(updates.y == -5) {
-										change.setValue("both");
-										Attr newKey = document.createAttribute("newKey");
-										newKey.setNodeValue(attrB.get(tokenA.ny - 1).getNodeName());
+						if (!((ArrayList) nextToken.get(1)).isEmpty()) {
+							// updating attributes
+
+							Element attributes = document.createElement("Attributes");
+							elt2.appendChild(attributes);
+							ArrayList<Info5> tokens = (ArrayList<Info5>) nextToken.get(1);
+
+							// getting node Axxx...
+							String op = ((Info7) token).a + "";
+							op = op.substring(1); // removing A or Tree Name
+							Node toUpdateA = document.importNode(rootA, true);
+
+							while (op.length() > 0) {
+								toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+								op = op.substring(1);
+							}
+
+							// getting node Bxxx...
+							op = ((Info7) token).b + "";
+							op = op.substring(1); // removing B or Tree Name
+							Node toUpdate = document.importNode(rootB, true);
+
+							while (op.length() > 0) {
+								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+								op = op.substring(1);
+							}
+							ArrayList<Node> attrA = Util.getArlFromNNM(toUpdateA.getAttributes());
+							ArrayList<Node> attrB = Util.getArlFromNNM(toUpdate.getAttributes());
+
+							reorder(attrA, attrB);
+
+							Element updAtt = document.createElement("update_Attribute");
+							for (int k = 0; k < tokens.size();) {
+								Info5 tokenA = tokens.get(k);
+								if (tokenA.x + 1 == tokenA.nx && tokenA.y + 1 == tokenA.ny) {
+									Info5 updates = getUpdateAttrScript(tokenA, attrA, attrB);
+									Element upd = document.createElement(attrA.get(tokenA.nx - 1).getNodeName());
+									Attr change = document.createAttribute("change");
+
+									if (updates.x == -5) {
+										if (updates.y == -5) {
+											change.setValue("both");
+											Attr newKey = document.createAttribute("newKey");
+											newKey.setNodeValue(attrB.get(tokenA.ny - 1).getNodeName());
+											Attr newValue = document.createAttribute("newValue");
+											newValue.setNodeValue(attrB.get(tokenA.ny - 1).getNodeValue());
+											upd.setAttributeNode(newValue);
+											upd.setAttributeNode(newKey);
+										} else {
+											change.setValue("key");
+											Attr newKey = document.createAttribute("newKey");
+											newKey.setNodeValue(attrB.get(tokenA.ny - 1).getNodeName());
+											upd.setAttributeNode(newKey);
+										}
+									} else {
+										change.setValue("value");
 										Attr newValue = document.createAttribute("newValue");
 										newValue.setNodeValue(attrB.get(tokenA.ny - 1).getNodeValue());
 										upd.setAttributeNode(newValue);
-										upd.setAttributeNode(newKey);
 									}
-									else {
-										change.setValue("key");
-										Attr newKey = document.createAttribute("newKey");
-										newKey.setNodeValue(attrB.get(tokenA.ny - 1).getNodeName());
-										upd.setAttributeNode(newKey);
-									}
-								}
-								else {
-									change.setValue("value");
-									Attr newValue = document.createAttribute("newValue");
-									newValue.setNodeValue(attrB.get(tokenA.ny - 1).getNodeValue());
-									upd.setAttributeNode(newValue);
-								}
-								upd.setAttributeNode(change);
-								updAtt.appendChild(upd);
-								
+									upd.setAttributeNode(change);
+									updAtt.appendChild(upd);
+
 //								upd.setAttributeNodeNS(
 //								str = "Update attribute " + attrA.get(tokenA.nx - 1).getNodeName() + " exanchge "
 //										+ (updates.x == -5 ? "Name to " + attrB.get(tokenA.ny - 1).getNodeName() + " " : " ")
 //										+ (updates.y == -5 ? "Value to " + attrB.get(tokenA.ny - 1).getNodeValue() + " " : " ");
 //								
-								
-								tokens.remove(k);
-							}
-							else
-								k++;
-						}
-						if(updAtt.getChildNodes().getLength()!=0) 
-							attributes.appendChild(updAtt);
-						
-						Element delAtt = document.createElement("Delete_Attribute");
-						for (int k=0;k<tokens.size();) {
-							Info5 tokenA = tokens.get(k);
 
-							if (tokenA.x + 1 == tokenA.nx && tokenA.y == tokenA.ny) {
-								Element toDel = document.createElement(attrA.get(tokenA.nx).getNodeName());
-//									str = "Delete " + attrA.get(tokenA.nx).getNodeName();
-								delAtt.appendChild(toDel);
 									tokens.remove(k);
-							} 
-							else
-								k++;
-						}
-						if(delAtt.getChildNodes().getLength()!=0) 
-							attributes.appendChild(delAtt);
-						
-						Element insAtt = document.createElement("Insert_Attribute");
-						for (int k=0;k<tokens.size();) {
-							Info5 tokenA = tokens.get(k);
+								} else
+									k++;
+							}
+							if (updAtt.getChildNodes().getLength() != 0)
+								attributes.appendChild(updAtt);
+
+							Element delAtt = document.createElement("Delete_Attribute");
+							for (int k = 0; k < tokens.size();) {
+								Info5 tokenA = tokens.get(k);
+
+								if (tokenA.x + 1 == tokenA.nx && tokenA.y == tokenA.ny) {
+									Element toDel = document.createElement(attrA.get(tokenA.nx - 1).getNodeName());
+//									str = "Delete " + attrA.get(tokenA.nx).getNodeName();
+									delAtt.appendChild(toDel);
+									tokens.remove(k);
+								} else
+									k++;
+							}
+							if (delAtt.getChildNodes().getLength() != 0)
+								attributes.appendChild(delAtt);
+
+							Element insAtt = document.createElement("Insert_Attribute");
+							for (int k = 0; k < tokens.size();) {
+								Info5 tokenA = tokens.get(k);
 								if (tokenA.x == tokenA.nx && tokenA.y + 1 == tokenA.ny) {
 //										str = "Insert " + " at " + tokenA.ny + " " + attrB.get(tokenA.ny - 1) + " ";
-										Node toIns = document.createElement(attrB.get(tokenA.ny - 1).getNodeName());
-										toIns.setTextContent(attrB.get(tokenA.ny - 1).getNodeValue());
-										insAtt.appendChild(toIns);
-										tokens.remove(k);
-								}
-								else
+									Node toIns = document.createElement(attrB.get(tokenA.ny - 1).getNodeName());
+									toIns.setTextContent(attrB.get(tokenA.ny - 1).getNodeValue());
+									insAtt.appendChild(toIns);
+									tokens.remove(k);
+								} else
 									k++;
+							}
+							if (insAtt.getChildNodes().getLength() != 0)
+								attributes.appendChild(insAtt);
+
 						}
-						if(insAtt.getChildNodes().getLength()!=0) 
-							attributes.appendChild(insAtt);
-						
-					}
-				}
-				else {
-					// getting node Axxx...
-					if(((Info7)token).x+1 == ((Info7)token).nx && ((Info7)token).y+1==((Info7)token).ny){
-					String op = ((Info7)token).a + "";
-					op = op.substring(1); // removing B or Tree Name
-					Node toUpdateA = document.importNode(rootA, true);
+					} else {
+						// getting node Axxx...
+						if (((Info7) token).x + 1 == ((Info7) token).nx
+								&& ((Info7) token).y + 1 == ((Info7) token).ny) {
+							String op = ((Info7) token).a + "";
+							op = op.substring(1); // removing B or Tree Name
+							Node toUpdateA = document.importNode(rootA, true);
 
-					while (op.length() > 0) {
-						toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-						op = op.substring(1);
-					}
-					toUpdateA = toUpdateA.getChildNodes().item(((Info7)token).nx-1);
-					
-					// getting node Bxxx...
-					op = ((Info7)token).b + "";
-					op = op.substring(1); // removing B or Tree Name
-					Node toUpdate = document.importNode(rootB, true);
+							while (op.length() > 0) {
+								toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+								op = op.substring(1);
+							}
+							toUpdateA = toUpdateA.getChildNodes().item(((Info7) token).nx - 1);
 
-					while (op.length() > 0) {
-						toUpdate = toUpdate.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-						op = op.substring(1);
-					}
-					toUpdate = toUpdate.getChildNodes().item(((Info7)token).ny-1);
-					
-					if(toUpdate.getNodeType()==Node.TEXT_NODE && toUpdateA.getNodeType()==Node.TEXT_NODE ) {
-						// updating text nodes;
-						String[] nodeBWords = toUpdate.getTextContent().split("\\s+");
-						
-						Element nodenametext = document.createElement(((Info7)token).a + "");
-						nodenametext.setAttribute("type", "textNode");
-						ArrayList<Object> tokens = (ES.get(i+1));
-						
-						Element updWord = document.createElement("Update_Word");
-						for(int k =0;k<tokens.size();k++) {
+							// getting node Bxxx...
+							op = ((Info7) token).b + "";
+							op = op.substring(1); // removing B or Tree Name
+							Node toUpdate = document.importNode(rootB, true);
 
-							Info5 textToken = (Info5) tokens.get(k);
-							if (textToken.x + 1 ==textToken.nx && (textToken).y +1 ==(textToken).ny) {
-								Element elt2 = document.createElement("w"+textToken.nx);
-								elt2.setTextContent(nodeBWords[textToken.ny-1]);
-								updWord.appendChild(elt2);
-								// ES.remove(token);
+							while (op.length() > 0) {
+								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+								op = op.substring(1);
+							}
+							toUpdate = toUpdate.getChildNodes().item(((Info7) token).ny - 1);
+
+							if (toUpdate.getNodeType() == Node.TEXT_NODE && toUpdateA.getNodeType() == Node.TEXT_NODE) {
+								// updating text nodes;
+								String[] nodeBWords = toUpdate.getTextContent().split("\\s+");
+
+								Element nodenametext = document.createElement(((Info7) token).a + "");
+								nodenametext.setAttribute("type", "textNode");
+								ArrayList<Object> tokens = (ES.get(i + 1));
+
+								Element updWord = document.createElement("Update_Word");
+								for (int k = 0; k < tokens.size(); k++) {
+
+									Info5 textToken = (Info5) tokens.get(k);
+									if (textToken.x + 1 == textToken.nx && (textToken).y + 1 == (textToken).ny) {
+										Element elt2 = document.createElement("w" + textToken.nx);
+										elt2.setTextContent(nodeBWords[textToken.ny - 1]);
+										updWord.appendChild(elt2);
+										// ES.remove(token);
+									}
+								}
+								if (updWord.hasChildNodes())
+									nodenametext.appendChild(updWord);
+
+								Element delWord = document.createElement("Delete_Word");
+								for (int k = 0; k < tokens.size(); k++) {
+									Info5 textToken = (Info5) tokens.get(k);
+									if (textToken.x + 1 == textToken.nx && (textToken).y == (textToken).ny) {
+										Element elt2 = document.createElement("w" + textToken.nx);
+										delWord.appendChild(elt2);
+										// ES.remove(token);
+//								tokens.remove(k);
+									}
+								}
+								if (delWord.hasChildNodes())
+									nodenametext.appendChild(delWord);
+
+								Element insWord = document.createElement("Insert_Word");
+								for (int k = 0; k < tokens.size(); k++) {
+									Info5 textToken = (Info5) tokens.get(k);
+									if (textToken.x == textToken.nx && (textToken).y + 1 == (textToken).ny) {
+										Element elt2 = document.createElement("w" + textToken.nx);
+										elt2.setTextContent(nodeBWords[textToken.ny - 1]);
+										insWord.appendChild(elt2);
+										// ES.remove(token);
+//								tokens.remove(k);
+									}
+								}
+								if (insWord.hasChildNodes())
+									nodenametext.appendChild(insWord);
+
+								if (nodenametext.hasChildNodes())
+									eltu.appendChild(nodenametext);
+
 							}
 						}
-						if(updWord.hasChildNodes()) 
-							nodenametext.appendChild(updWord);
-						
-						Element delWord = document.createElement("Delete_Word");
-						for(int k =0;k<tokens.size();k++) {
-							Info5 textToken = (Info5) tokens.get(k);
-							if (textToken.x + 1 ==textToken.nx && (textToken).y ==(textToken).ny) {
-								Element elt2 = document.createElement("w"+textToken.nx);
-								delWord.appendChild(elt2);
-								// ES.remove(token);
-//								tokens.remove(k);
-							}	
-						}
-						if(delWord.hasChildNodes()) 
-							nodenametext.appendChild(delWord);
-						
-						Element insWord = document.createElement("Insert_Word");
-						for(int k =0;k<tokens.size();k++) {
-							Info5 textToken = (Info5) tokens.get(k);
-							if (textToken.x  ==textToken.nx && (textToken).y +1 ==(textToken).ny) {
-								Element elt2 = document.createElement("w"+textToken.nx);
-								elt2.setTextContent(nodeBWords[textToken.ny-1]);
-								insWord.appendChild(elt2);
-								// ES.remove(token);
-//								tokens.remove(k);
-							}	
-						}
-						if(insWord.hasChildNodes()) 
-							nodenametext.appendChild(insWord);
-						
-						if(nodenametext.hasChildNodes()) 
-							eltu.appendChild(nodenametext);
-						
-					}
-					}		
-				
-				else {
-					if (((Info7)token).x != -1 && ((Info7)token).x + 1 ==((Info7)token).nx && ((Info7)token).y ==((Info7)token).ny) {
-						Element elt2 = document.createElement(((Info7)token).a + ((Info7)token).nx + "");
-						eltd.appendChild(elt2);
-					}
-					else {
-						if (((Info7)token).x != -1 && (((Info7)token).y + 1 == ((Info7)token).ny)  && (((Info7)token).x == ((Info7)token).nx)) {
-							Element elt2;
-							elt2 = document.createElement("A" + (((Info7)token).b + ((Info7)token).ny + "").substring(1));
-							// elt.setAttribute("at", );
-							// elt.setTextContent(token.b+token.ny+"");
 
-							String opc = ((Info7)token).b + ((Info7)token).ny + "";
-							opc = opc.substring(1); // removing B or Tree Name
-							Node toInsert = document.importNode(rootB, true);
+						else {
+							if (((Info7) token).x != -1 && ((Info7) token).x + 1 == ((Info7) token).nx
+									&& ((Info7) token).y == ((Info7) token).ny) {
+								Element elt2 = document.createElement(((Info7) token).a + ((Info7) token).nx + "");
+								eltd.appendChild(elt2);
+							} else {
+								if (((Info7) token).x != -1 && (((Info7) token).y + 1 == ((Info7) token).ny)
+										&& (((Info7) token).x == ((Info7) token).nx)) {
+									Element elt2;
+									elt2 = document.createElement(
+											"A" + (((Info7) token).b + ((Info7) token).ny + "").substring(1));
+									// elt.setAttribute("at", );
+									// elt.setTextContent(token.b+token.ny+"");
 
-							while (opc.length() > 0) {
-								toInsert = toInsert.getChildNodes().item(Integer.parseInt("" + opc.charAt(0)) - 1);
-								opc = opc.substring(1);
+									String opc = ((Info7) token).b + ((Info7) token).ny + "";
+									opc = opc.substring(1); // removing B or Tree Name
+									Node toInsert = document.importNode(rootB, true);
+
+									while (opc.length() > 0) {
+										toInsert = toInsert.getChildNodes()
+												.item(Integer.parseInt("" + opc.charAt(0)) - 1);
+										opc = opc.substring(1);
+									}
+									elt2.appendChild(toInsert);
+									elti.appendChild(elt2);
+
+									// ES.remove(token);
+
+								}
 							}
-							elt2.appendChild(toInsert);
-							elti.appendChild(elt2);
-
-							// ES.remove(token);
 
 						}
 					}
-						
-				}
-				}
 				}
 
 			}
