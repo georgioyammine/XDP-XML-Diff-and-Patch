@@ -163,7 +163,7 @@ public class XMLDiffAndPatch {
 						// update is possible
 						if (listA.item(i - 1).getNodeType() == Node.TEXT_NODE) {
 							updateInfo = EDStrings(listA.item(i - 1).getTextContent().split("\\s+"),
-									listB.item(j - 1).getTextContent().split("\\s+"));
+									listB.item(j - 1).getTextContent().split("\\s+"), false);
 							text = true;
 
 						} else {
@@ -461,7 +461,7 @@ public class XMLDiffAndPatch {
 
 		// update attributes
 		ArrayList<Object> attr = EDAttr(Util.getArlFromNNM(rootA.getAttributes()),
-				Util.getArlFromNNM(rootB.getAttributes()));
+				Util.getArlFromNNM(rootB.getAttributes()), false);
 		cost += (int) (attr.get(0));
 		update.add(attr.get(1));
 
@@ -536,7 +536,7 @@ public class XMLDiffAndPatch {
 		return toReturn;
 	}
 
-	public static ArrayList<Object> EDAttr(ArrayList<Node> attrA, ArrayList<Node> attrB) {
+	public static ArrayList<Object> EDAttr(ArrayList<Node> attrA, ArrayList<Node> attrB, boolean print) {
 		reorder(attrA, attrB);
 		System.out.println(attrA);
 		System.out.println(attrB);
@@ -612,10 +612,12 @@ public class XMLDiffAndPatch {
 
 			}
 		}
-		for (int i = 0; i <= attrA.size(); i++) {
-			for (int j = 0; j <= attrB.size(); j++)
-				System.out.print(distance[i][j] + " ");
-			System.out.println();
+		if(print){
+			for (int i = 0; i <= attrA.size(); i++) {
+				for (int j = 0; j <= attrB.size(); j++)
+					System.out.print(distance[i][j] + " ");
+				System.out.println();
+			}
 		}
 		arl.add(distance[attrA.size()][attrB.size()]);
 		// arl.add(pointers);
@@ -698,7 +700,7 @@ public class XMLDiffAndPatch {
 		return upd;
 	}
 
-	public static ArrayList<Object> EDStrings(String[] rootAContent, String[] rootBContent) {
+	public static ArrayList<Object> EDStrings(String[] rootAContent, String[] rootBContent, boolean print) {
 		System.out.println(Arrays.toString(rootAContent));
 		System.out.println(Arrays.toString(rootBContent));
 		ArrayList<Object> arl = new ArrayList<>();
@@ -772,10 +774,12 @@ public class XMLDiffAndPatch {
 
 			}
 		}
-		for (int i = 0; i <= rootAContent.length; i++) {
-			for (int j = 0; j <= rootBContent.length; j++)
-				System.out.print(distance[i][j] + " ");
-			System.out.println();
+		if(print){
+			for (int i = 0; i <= rootAContent.length; i++) {
+				for (int j = 0; j <= rootBContent.length; j++)
+					System.out.print(distance[i][j] + " ");
+				System.out.println();
+			}
 		}
 		// return distance (int), pointers [][], ES ArrayList
 		arl.add(distance[rootAContent.length][rootBContent.length]);
