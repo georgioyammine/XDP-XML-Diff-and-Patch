@@ -167,7 +167,7 @@ public class XMLDiffAndPatch {
 							text = true;
 
 						} else {
-							updateInfo = TED(listA.item(i - 1), listB.item(j - 1), R1 + i, R2 + j, false);
+							updateInfo = TED(listA.item(i - 1), listB.item(j - 1), R1+":"+ i, R2+":"+ j, false);
 						}
 						update = dist[i - 1][j - 1] + (int) updateInfo.get(0);
 						dist[i][j] = update;
@@ -245,6 +245,7 @@ public class XMLDiffAndPatch {
 		ArrayList<Object> ES = getEditScript(m, n, pointers, dist, R1, R2);
 		results.add(0, ES);
 		results.add(0, dist[m][n]);
+		results.add(2,(dist[m][0]+dist[0][n]-dist[m][n])/(0.0+dist[m][0]+dist[0][n]));
 		// results.add(2,fes);
 		System.out.println();
 		return results;
@@ -928,12 +929,16 @@ public class XMLDiffAndPatch {
 							Element label = document.createElement("Label");
 
 							String op = ((Info7) token).b + "";
-							op = op.substring(1); // removing B or Tree Name
+							System.out.println(op);
+							op = op.substring(2); // removing B or Tree Name
+							System.out.println(op);
+							String[] digits = op.split(":");
 							Node toUpdate = document.importNode(rootB, true);
 
-							while (op.length() > 0) {
-								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-								op = op.substring(1);
+							for(String a :digits) {
+								System.out.println("A"+a);
+								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt(a) - 1);
+							
 							}
 							// elt.setAttribute(token.a, toUpdate.getNodeName());
 							label.setTextContent(toUpdate.getNodeName());
@@ -949,23 +954,24 @@ public class XMLDiffAndPatch {
 
 							// getting node Axxx...
 							String op = ((Info7) token).a + "";
-							op = op.substring(1); // removing A or Tree Name
+							op = op.substring(2); // removing A or Tree Name
 							Node toUpdateA = document.importNode(rootA, true);
 
-							while (op.length() > 0) {
-								toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-								op = op.substring(1);
-							}
+							String[] digits = op.split(":");
+
+							for(String a :digits) 
+								toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt(a) - 1);
 
 							// getting node Bxxx...
 							op = ((Info7) token).b + "";
-							op = op.substring(1); // removing B or Tree Name
+							op = op.substring(2); // removing B or Tree Name
 							Node toUpdate = document.importNode(rootB, true);
 
-							while (op.length() > 0) {
-								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-								op = op.substring(1);
-							}
+							String[] digitsB = op.split(":");
+
+							for(String a :digitsB) 
+								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt(a) - 1);
+							
 							ArrayList<Node> attrA = Util.getArlFromNNM(toUpdateA.getAttributes());
 							ArrayList<Node> attrB = Util.getArlFromNNM(toUpdate.getAttributes());
 
@@ -1052,24 +1058,26 @@ public class XMLDiffAndPatch {
 						if (((Info7) token).x + 1 == ((Info7) token).nx
 								&& ((Info7) token).y + 1 == ((Info7) token).ny) {
 							String op = ((Info7) token).a + "";
-							op = op.substring(1); // removing B or Tree Name
+							op = op.substring(2); // removing B or Tree Name
 							Node toUpdateA = document.importNode(rootA, true);
 
-							while (op.length() > 0) {
-								toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-								op = op.substring(1);
-							}
+							String[] digits = op.split(":");
+
+							for(String a :digits) 
+								toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt(a) - 1);
+							
 							toUpdateA = toUpdateA.getChildNodes().item(((Info7) token).nx - 1);
 
 							// getting node Bxxx...
 							op = ((Info7) token).b + "";
-							op = op.substring(1); // removing B or Tree Name
+							op = op.substring(2); // removing B or Tree Name
 							Node toUpdate = document.importNode(rootB, true);
 
-							while (op.length() > 0) {
-								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-								op = op.substring(1);
-							}
+							String[] digitsB = op.split(":");
+
+							for(String a :digitsB) 
+								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt(a) - 1);
+							
 							toUpdate = toUpdate.getChildNodes().item(((Info7) token).ny - 1);
 
 							if (toUpdate.getNodeType() == Node.TEXT_NODE && toUpdateA.getNodeType() == Node.TEXT_NODE) {
@@ -1141,15 +1149,18 @@ public class XMLDiffAndPatch {
 									// elt.setAttribute("at", );
 									// elt.setTextContent(token.b+token.ny+"");
 
-									String opc = ((Info7) token).b + ((Info7) token).ny + "";
-									opc = opc.substring(1); // removing B or Tree Name
+									String opc = ((Info7) token).b+":"+ ((Info7) token).ny + "";
+									opc = opc.substring(2); // removing B or Tree Name
 									Node toInsert = document.importNode(rootB, true);
 
-									while (opc.length() > 0) {
-										toInsert = toInsert.getChildNodes()
-												.item(Integer.parseInt("" + opc.charAt(0)) - 1);
-										opc = opc.substring(1);
+									String[] digits = opc.split(":");
+									System.out.println(opc);
+									for(String a :digits) {
+										toInsert = toInsert.getChildNodes().item(Integer.parseInt(a) - 1);
+										
 									}
+									
+					
 									elt2.appendChild(toInsert);
 									elti.appendChild(elt2);
 
