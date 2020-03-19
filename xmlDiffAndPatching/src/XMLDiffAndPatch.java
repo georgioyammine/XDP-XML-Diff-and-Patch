@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.zip.CRC32;
+
+import javax.swing.text.html.HTMLDocument.HTMLReader.SpecialAction;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -25,6 +27,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -80,17 +83,15 @@ public class XMLDiffAndPatch {
 
 	public static ArrayList<Object> TED(Node rootA, Node rootB, String R1, String R2, boolean print) {
 
-		clean(rootA);
-		clean(rootB);
-
-		getTreesInA(rootA); // pre-processing
-		getTreesInB(rootB); // pre-processing
-
 		NodeList listA = rootA.getChildNodes();
 		NodeList listB = rootB.getChildNodes();
 
 		int m = listA.getLength();
 		int n = listB.getLength();
+		
+		if(print) {
+			System.out.println(m+" "+n);
+		}
 
 		int[][] dist = new int[m + 1][n + 1];
 		ArrayList<Object>[][] pointers = new ArrayList[m + 1][n + 1];
@@ -105,7 +106,6 @@ public class XMLDiffAndPatch {
 		pointers[0][0].add(new Info7(R1, R2, -1, -1, 0, 0, dist[0][0]));
 		pointers[0][0].add(updateRoot);
 		pointers[0][0].add("");
-		System.out.println("UR" + updateRoot);
 
 		for (int i = 1; i <= m; i++) {
 			dist[i][0] = dist[i - 1][0] + CostDeleteTree(rootA.getChildNodes().item(i - 1));
@@ -113,28 +113,28 @@ public class XMLDiffAndPatch {
 			del.add(new Info7(R1, R2, i - 1, 0, i, 0, dist[i][0]));
 			pointers[i][0] = del;
 		}
+		if (R1.equals("A") && R2.equals("B"))
+			System.out.println("Step 1 Done");
 		for (int j = 1; j <= n; j++) {
 			dist[0][j] = dist[0][j - 1] + CostInsertTree(rootB.getChildNodes().item(j - 1));
 			ArrayList<Object> ins = new ArrayList<>();
 			ins.add(new Info7(R1, R2, 0, j - 1, 0, j, dist[0][j]));
 			pointers[0][j] = ins;
 		}
-
+		if (R1.equals("A") && R2.equals("B"))
+			System.out.println("Step 2 Done");
 		for (int i = 1; i <= m; i++) {
+			if (R1.equals("A") && R2.equals("B"))
+				System.out.println("Progress: " + i + "/" + m);
 			for (int j = 1; j <= n; j++) {
-				// System.out.println(rootA.getChildNodes().item(i-1));
-				// System.out.println(rootB.getChildNodes().item(j-1));
-				// System.out.println(i+" "+j+" "+
-				// rootA+" "+rootB+
-				// " "+(CostDeleteTree(rootA))
-				// +" "+(CostInsertTree(rootB))
-				// );
+				if (R1.equals("A") && R2.equals("B") && j % 10 == 0)
+					System.out.println("\tProgress: " + j + "/" + n);
 
-//				int update = Integer.MAX_VALUE / 2;
+				int update = Integer.MAX_VALUE / 2;
 				boolean text = false;
 				ArrayList<Object> updateInfo = new ArrayList<>();
 				int delete = dist[i - 1][j] + CostDeleteTree(rootA.getChildNodes().item(i - 1));
-				int insert, update;
+				int insert;
 				if (delete <= dist[i - 1][j - 1]) {
 					if (delete <= dist[i][j - 1]) {
 						dist[i][j] = delete;
@@ -157,30 +157,10 @@ public class XMLDiffAndPatch {
 						}
 					}
 				} else {
-//					update = Integer.MAX_VALUE;
-
-					if (listA.item(i - 1).getNodeType() == listB.item(j - 1).getNodeType()) {
-						// update is possible
-						if (listA.item(i - 1).getNodeType() == Node.TEXT_NODE) {
-							updateInfo = EDStrings(listA.item(i - 1).getTextContent().split("\\s+"),
-									listB.item(j - 1).getTextContent().split("\\s+"), false);
-							text = true;
-
-						} else {
-							updateInfo = TED(listA.item(i - 1), listB.item(j - 1), R1+":"+ i, R2+":"+ j, false);
-						}
-						update = dist[i - 1][j - 1] + (int) updateInfo.get(0);
-						dist[i][j] = update;
-						ArrayList<Object> upd = new ArrayList<>();
-						upd.add(new Info7(R1, R2, i - 1, j - 1, i, j, dist[i][j]));
-						upd.add(updateInfo.get(1));
-						if (text) {
-							upd.add(text);
-							upd.add(text);
-						}
-						pointers[i][j] = upd;
-					} else {
-						insert = dist[i][j - 1] + CostInsertTree(rootB.getChildNodes().item(j - 1));
+					// update = Integer.MAX_VALUE;
+					insert = dist[i][j - 1] + CostInsertTree(rootB.getChildNodes().item(j - 1));
+					if (insert <= dist[i - 1][j - 1]) {
+						// no need for updating
 						if (insert < delete) {
 							dist[i][j] = insert;
 							ArrayList<Object> ins = new ArrayList<>();
@@ -193,51 +173,92 @@ public class XMLDiffAndPatch {
 							del.add(new Info7(R1, R2, i - 1, j, i, j, dist[i][j]));
 							pointers[i][j] = del;
 						}
+					} else {
+						// checking if update is needed
+						if (listA.item(i - 1).getNodeType() == listB.item(j - 1).getNodeType()) {
+							// update is possible
+							if (listA.item(i - 1).getNodeType() == Node.TEXT_NODE) {
+								updateInfo = EDStrings(listA.item(i - 1).getTextContent().split("\\s+"),
+										listB.item(j - 1).getTextContent().split("\\s+"), false);
+								text = true;
+
+							} else {
+								updateInfo = TED(listA.item(i - 1), listB.item(j - 1), R1 + ":" + i, R2 + ":" + j,
+										false);
+							}
+							update = dist[i - 1][j - 1] + (int) updateInfo.get(0);
+
+							// compare all of them
+
+							if (update < insert) {
+								if (update < delete) {
+									dist[i][j] = update;
+									ArrayList<Object> upd = new ArrayList<>();
+									upd.add(new Info7(R1, R2, i - 1, j - 1, i, j, dist[i][j]));
+									upd.add(updateInfo.get(1));
+									if (text) {
+										upd.add(text);
+										upd.add(text);
+									}
+									pointers[i][j] = upd;
+								} else {
+									// check inset and delete
+									if (insert < delete) {
+										dist[i][j] = insert;
+										ArrayList<Object> ins = new ArrayList<>();
+										ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
+										pointers[i][j] = ins;
+
+									} else {
+										dist[i][j] = delete;
+										ArrayList<Object> del = new ArrayList<>();
+										del.add(new Info7(R1, R2, i - 1, j, i, j, dist[i][j]));
+										pointers[i][j] = del;
+									}
+								}
+							} else {
+								// check inset and delete
+								if (insert < delete) {
+									dist[i][j] = insert;
+									ArrayList<Object> ins = new ArrayList<>();
+									ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
+									pointers[i][j] = ins;
+
+								} else {
+									dist[i][j] = delete;
+									ArrayList<Object> del = new ArrayList<>();
+									del.add(new Info7(R1, R2, i - 1, j, i, j, dist[i][j]));
+									pointers[i][j] = del;
+								}
+							}
+
+						} else {
+							insert = dist[i][j - 1] + CostInsertTree(rootB.getChildNodes().item(j - 1));
+							if (insert < delete) {
+								dist[i][j] = insert;
+								ArrayList<Object> ins = new ArrayList<>();
+								ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
+								pointers[i][j] = ins;
+
+							} else {
+								dist[i][j] = delete;
+								ArrayList<Object> del = new ArrayList<>();
+								del.add(new Info7(R1, R2, i - 1, j, i, j, dist[i][j]));
+								pointers[i][j] = del;
+							}
+						}
 					}
 				}
 
-//				int insert = dist[i][j - 1] + CostInsertTree(rootB.getChildNodes().item(j - 1));
-//				if (update < delete) {
-//					if (update < insert) {
-//						dist[i][j] = update;
-//						ArrayList<Object> upd = new ArrayList<>();
-//						upd.add(new Info7(R1, R2, i - 1, j - 1, i, j, dist[i][j]));
-//						upd.add(updateInfo.get(1));
-//						if (text) {
-//							upd.add(text);
-//							upd.add(text);
-//						}
-//						pointers[i][j] = upd;
-//					} else {
-//						dist[i][j] = insert;
-//						ArrayList<Object> ins = new ArrayList<>();
-//						ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
-//						pointers[i][j] = ins;
-//					}
-//				} else {
-//					if (delete < insert) {
-//						dist[i][j] = delete;
-//						ArrayList<Object> del = new ArrayList<>();
-//						del.add(new Info7(R1, R2, i - 1, j, i, j, dist[i][j]));
-//						pointers[i][j] = del;
-//					} else {
-//						dist[i][j] = insert;
-//						ArrayList<Object> ins = new ArrayList<>();
-//						ins.add(new Info7(R1, R2, i, j - 1, i, j, dist[i][j]));
-//						pointers[i][j] = ins;
-//					}
-//				}
-
-				// dist[i][j] = Math.min(Math.min(dist[i-1][j-1] + TED(listA.item(i-1),
-				// listB.item(j-1)),
-				// dist[i-1][j] + CostDeleteTree(rootA.getChildNodes().item(i-1))),
-				// dist[i][j-1] + CostInsertTree(rootB.getChildNodes().item(j-1)));
 			}
 		}
 		if (print) {
 			System.out.println(R1 + ":" + rootA + " " + R2 + ":" + rootB);
 			for (int i = 0; i <= m; i++) {
-				System.out.println(Arrays.toString(dist[i]));
+				for(int j = 0;j<= n;j++) {
+					System.out.print(dist[i][j]+"\t");
+				}
+				System.out.println();
 			}
 			System.out.println();
 		}
@@ -245,9 +266,8 @@ public class XMLDiffAndPatch {
 		ArrayList<Object> ES = getEditScript(m, n, pointers, dist, R1, R2);
 		results.add(0, ES);
 		results.add(0, dist[m][n]);
-		results.add(2,(dist[m][0]+dist[0][n]-dist[m][n])/(0.0+dist[m][0]+dist[0][n]));
+		results.add(2, (dist[m][0] + dist[0][n] - dist[m][n]) / (0.0 + dist[m][0] + dist[0][n]));
 		// results.add(2,fes);
-		System.out.println();
 		return results;
 	}
 
@@ -270,19 +290,11 @@ public class XMLDiffAndPatch {
 					if (prev.size() > 3) {
 						if (!((ArrayList<Object>) prev.get(1)).isEmpty()) {
 							reversedEditScript.addAll((ArrayList<Object>) prev.get(1));
-//						((Info7) prev.get(0)).x;
-//						((Info7) prev.get(0)).y;
 							reversedEditScript.add((Info7) prev.get(0));
 						}
 					} else {
 						// adding info of recursive call
-
 						reversedEditScript.addAll((ArrayList<Object>) prev.get(1));
-
-						// System.out.println(((int[][])(prev.get(1)))[0][0]);
-						// reversedEditScript.add(new XYZ("X", "X", 0, 0, 0));
-
-						// reversedEditScript.add(new XYZ("X", "X", 0, 0, 0));
 					}
 				}
 			} else
@@ -326,7 +338,6 @@ public class XMLDiffAndPatch {
 		Document document = db.parse(file);
 		document.getDocumentElement().normalize();
 		Element root = document.getDocumentElement();
-		clean(root);
 
 		File file2 = new File(fileName2);
 		DocumentBuilderFactory dbf2 = DocumentBuilderFactory.newInstance();
@@ -336,20 +347,26 @@ public class XMLDiffAndPatch {
 		document2.getDocumentElement().normalize();
 		Element root2 = document2.getDocumentElement();
 
+		clean(root);  
+		clean(root2); 
+
+		getTreesInA(root); // pre-processing
+		getTreesInB(root2); // pre-processing
+
+		System.out.println("Started TED");
 		ArrayList<Object> ted = XMLDiffAndPatch.TED(root, root2, "A", "B", true);
 
 		int distance = (Integer) ted.get(0);
 		Collections.reverse((List<Object>) ted.get(1));
-		editScriptToXML((ArrayList<ArrayList<Object>>) ted.get(1), file, file2, root, root2, distance);
+		double similarity = ((int) (10000 * (double) ted.get(2)) / 100.0);// 2 decimal places percentage
+		editScriptToXML((ArrayList<ArrayList<Object>>) ted.get(1), file, file2, root, root2, distance, similarity);
 		return ted;
 	}
 
-	private static boolean containedIn(Node rootA, ArrayList<Node> TreesIn) {
+	private static boolean containedIn(Node node, ArrayList<Node> TreesIn) {
 		for (Node a : TreesIn) {
-			if (rootA.isEqualNode(a))
+			if (node.isEqualNode(a))
 				return true;
-			// if (containedIn2(rootA, a))
-			// return true;
 		}
 		return false;
 	}
@@ -358,31 +375,6 @@ public class XMLDiffAndPatch {
 	public static boolean containedIn(Node rootA, Node rootB) {
 		getTreesInB(rootB);
 		return containedIn(rootA, TreesInB);
-	}
-
-	private static boolean containedIn2(Node rootA, Node rootB) {
-		if (!rootA.getNodeName().equals(rootB.getNodeName()))
-			return false;
-
-		if (!rootA.hasChildNodes())
-			return rootA.isEqualNode(rootB);
-
-		NodeList listA = rootA.getChildNodes();
-		NodeList listB = rootB.getChildNodes();
-		boolean flag1 = true;
-		for (int i = 0; i < listA.getLength(); i++) {
-			boolean flag = false;
-			for (int j = 0; j < listB.getLength(); j++) {
-				if (listA.item(i).getNodeName().equals(listB.item(j).getNodeName()))
-					flag = flag || containedIn2(listA.item(i), listB.item(j));
-				if (flag)
-					break;
-			}
-			flag1 = flag1 && flag;
-			if (!flag1)
-				return false;
-		}
-		return flag1;
 	}
 
 	private static void getTreesInA(Node node) {
@@ -406,7 +398,7 @@ public class XMLDiffAndPatch {
 	private static int CostInsertTree(Node rootB) {
 		if (costsOfTrees.containsKey(rootB))
 			return costsOfTrees.get(rootB);
-		if (rootB.getNodeType() == Node.ELEMENT_NODE) {
+		if (rootB.getNodeType() != Node.TEXT_NODE) {
 			if (containedIn(rootB, TreesInA)) {
 				return insertContained;
 			}
@@ -428,7 +420,7 @@ public class XMLDiffAndPatch {
 	private static int CostDeleteTree(Node rootA) {
 		if (costsOfTrees.containsKey(rootA))
 			return costsOfTrees.get(rootA);
-		if (rootA.getNodeType() == Node.ELEMENT_NODE) {
+		if (rootA.getNodeType() != Node.TEXT_NODE) {
 			if (containedIn(rootA, TreesInB)) {
 				return insertContained;
 			}
@@ -470,76 +462,9 @@ public class XMLDiffAndPatch {
 		return update;
 	}
 
-	// public static String getFirstLevelTextContent(Node node) {
-	// NodeList list = node.getChildNodes();
-	// StringBuilder textContent = new StringBuilder();
-	// for (int i = 0; i < list.getLength(); ++i) {
-	// Node child = list.item(i);
-	// if (child.getNodeType() == Node.TEXT_NODE)
-	// textContent.append(child.getTextContent()+" ");
-	// }
-	// System.out.println("YXT"+textContent.toString());
-	// return textContent.toString();
-	// }
-
-	private static ArrayList<Object> getESNode(ArrayList<Object>[][] pointers) {
-		// ArrayList<Info5> reversedEditScript = new ArrayList<>();
-		//
-		// int a = m, b = n;
-		// int A = 10;
-		// while (a != -1 && b != -1 && ((Info5) (pointers[a][b].get(0))).z != 0) {
-		// ArrayList<Object> prev = pointers[a][b];
-		// if (prev.size() > 1) {
-		// // System.out.println(((int[][])(prev.get(1)))[0][0]);
-		// // reversedEditScript.add(new XYZ("X", "X", 0, 0, 0));
-		// reversedEditScript.addAll((ArrayList<Info5>) prev.get(1));
-		// // reversedEditScript.add(new XYZ("X", "X", 0, 0, 0));
-		// } else
-		// reversedEditScript.add((Info7) prev.get(0));
-		//
-		// a = (int) ((Info7) prev.get(0)).x;
-		// b = (int) ((Info7) prev.get(0)).y;
-		//
-		// }
-		// return reversedEditScript;
-
-		ArrayList<ArrayList<Object>> ESNode = new ArrayList<>();
-		ArrayList<Object> toReturn = new ArrayList<>();
-
-		ArrayList<Object> token = pointers[pointers.length - 1][pointers[0].length - 1];
-		while (((Info5) (token.get(0))).z != 0) {
-			ESNode.add(token);
-			token = pointers[((Info5) (token.get(0))).x][((Info5) (token.get(0))).y];
-		}
-		Collections.reverse(ESNode);
-		int prev = 0;
-		// System.out.println(ESContent);
-		for (int i = 0; i < ESNode.size();) {
-
-			Info5 elt = (Info5) (ESNode.get(i).get(0));
-			// System.out.println("i: "+i+ " "+prev+" "+elt.z);
-
-			if (elt.z == prev) {
-				ESNode.remove(i);
-			} else {
-				toReturn.add(elt);
-				if (ESNode.get(i).size() > 1)
-					toReturn.add(ESNode.get(i).get(1));
-
-				int tmp = prev;
-				prev = elt.z;
-				elt.z -= tmp;
-				i++;
-			}
-
-		}
-		return toReturn;
-	}
-
 	public static ArrayList<Object> EDAttr(ArrayList<Node> attrA, ArrayList<Node> attrB, boolean print) {
 		reorder(attrA, attrB);
-		System.out.println(attrA);
-		System.out.println(attrB);
+
 		ArrayList<Object> arl = new ArrayList<>();
 		int[][] distance = new int[attrA.size() + 1][attrB.size() + 1];
 		distance[0][0] = 0;
@@ -612,7 +537,9 @@ public class XMLDiffAndPatch {
 
 			}
 		}
-		if(print){
+		if (print) {
+			System.out.println(attrA);
+			System.out.println(attrB);
 			for (int i = 0; i <= attrA.size(); i++) {
 				for (int j = 0; j <= attrB.size(); j++)
 					System.out.print(distance[i][j] + " ");
@@ -649,38 +576,6 @@ public class XMLDiffAndPatch {
 		listB.addAll(newListB);
 	}
 
-	public static ArrayList<String> formatEDAttr(ArrayList<Info5> tokens, ArrayList<Node> attrA,
-			ArrayList<Node> attrB) {
-		ArrayList<String> arl = new ArrayList<>();
-		for (Info5 token : tokens) {
-			String str = "";
-			if (token.x + 1 == token.nx && token.y + 1 == token.ny) {
-				// Info5 updates = getUpdateAttrScript(token,attrA,attrB);
-				// str = "Update at attribute "+token.nx+" exanchge "+
-				// (updates.x==-5?"Name to "+attrB.item(token.ny-1).getNodeName()+" " :" ")+
-				// (updates.y==-5?"Value to "+attrB.item(token.ny-1).getNodeValue():" ")
-				// + "with attribute from" + token.ny;
-
-				Info5 updates = getUpdateAttrScript(token, attrA, attrB);
-				str = "Update attribute " + attrA.get(token.nx - 1).getNodeName() + " exanchge "
-						+ (updates.x == -5 ? "Name to " + attrB.get(token.ny - 1).getNodeName() + " " : " ")
-						+ (updates.y == -5 ? "Value to " + attrB.get(token.ny - 1).getNodeValue() + " " : " ");
-
-			} else {
-				if (token.x + 1 == token.nx && token.y == token.ny) {
-					str = "Delete " + token.nx;
-				} else {
-					if (token.x == token.nx && token.y + 1 == token.ny) {
-						str = "Insert " + " at " + token.ny + " " + attrB.get(token.ny - 1) + " ";
-					}
-				}
-			}
-			arl.add(str);
-		}
-		return arl;
-
-	}
-
 	private static Info5 getUpdateAttrScript(Info5 token, ArrayList<Node> attrA, ArrayList<Node> attrB) {
 		int x = token.z;
 		Node a = attrA.get(token.nx - 1);
@@ -701,8 +596,7 @@ public class XMLDiffAndPatch {
 	}
 
 	public static ArrayList<Object> EDStrings(String[] rootAContent, String[] rootBContent, boolean print) {
-		System.out.println(Arrays.toString(rootAContent));
-		System.out.println(Arrays.toString(rootBContent));
+
 		ArrayList<Object> arl = new ArrayList<>();
 		int[][] distance = new int[rootAContent.length + 1][rootBContent.length + 1];
 		distance[0][0] = 0;
@@ -774,7 +668,9 @@ public class XMLDiffAndPatch {
 
 			}
 		}
-		if(print){
+		if (print) {
+			System.out.println(Arrays.toString(rootAContent));
+			System.out.println(Arrays.toString(rootBContent));
 			for (int i = 0; i <= rootAContent.length; i++) {
 				for (int j = 0; j <= rootBContent.length; j++)
 					System.out.print(distance[i][j] + " ");
@@ -865,7 +761,7 @@ public class XMLDiffAndPatch {
 	}
 
 	private static void editScriptToXML(ArrayList<ArrayList<Object>> E, File original, File newFile, Element rootA,
-			Element rootB, int distance) throws Exception {
+			Element rootB, int distance, double similarity) throws Exception {
 		try {
 			ArrayList<ArrayList<Object>> ES = new ArrayList<>(E);
 
@@ -877,6 +773,7 @@ public class XMLDiffAndPatch {
 			document.appendChild(root);
 			root.setAttribute("version", "" + version);
 			root.setAttribute("distance", distance + "");
+			root.setAttribute("similarity", similarity + "%");
 
 			Element file1 = document.createElement("Original_File");
 			file1.setAttribute("name", original.getName());
@@ -886,7 +783,7 @@ public class XMLDiffAndPatch {
 			long crc = checksumBufferedInputStream(tmpInput);
 			String hashInput = Long.toHexString(crc);
 
-			file1.setAttribute("Hash", "" + hashInput);
+			file1.setAttribute("crc32", "" + hashInput);
 
 			// hashCode is used to verify if the input file is correct and compatible
 			// file1.setTextContent(original.getName());
@@ -901,7 +798,7 @@ public class XMLDiffAndPatch {
 			String hashInput2 = Long.toHexString(crc2);
 			tmpInput2.delete();
 
-			file2.setAttribute("Hash", "" + hashInput2);
+			file2.setAttribute("crc32", "" + hashInput2);
 
 			// hash is used to verify if the output is correct
 
@@ -912,7 +809,7 @@ public class XMLDiffAndPatch {
 
 			root.appendChild(es);
 
-//			Collections.reverse(ES);
+			// Collections.reverse(ES);
 			Element eltu;
 			eltu = document.createElement("Update");
 			Element eltd;
@@ -933,55 +830,56 @@ public class XMLDiffAndPatch {
 							Element label = document.createElement("Label");
 
 							String op = ((Info7) token).b + "";
-							System.out.println(op);
-							op = op.substring(2); // removing B or Tree Name
-							System.out.println(op);
-							String[] digits = op.split(":");
 							Node toUpdate = document.importNode(rootB, true);
+							if (op.length() > 1) {
+								op = op.substring(2); // removing B or Tree Name
+								String[] digits = op.split(":");
 
-							for(String a :digits) {
-								System.out.println("A"+a);
-								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt(a) - 1);
-							
+								for (String a : digits) {
+									toUpdate = toUpdate.getChildNodes().item(Integer.parseInt(a) - 1);
+								}
 							}
 							// elt.setAttribute(token.a, toUpdate.getNodeName());
 							label.setTextContent(toUpdate.getNodeName());
 							elt2.appendChild(label);
-							eltu.appendChild(elt2);
+
 						}
 						if (!((ArrayList) nextToken.get(1)).isEmpty()) {
 							// updating attributes
 
 							Element attributes = document.createElement("Attributes");
-							elt2.appendChild(attributes);
+
 							ArrayList<Info5> tokens = (ArrayList<Info5>) nextToken.get(1);
 
 							// getting node Axxx...
 							String op = ((Info7) token).a + "";
-							op = op.substring(2); // removing A or Tree Name
 							Node toUpdateA = document.importNode(rootA, true);
+							if (op.length() > 1) {
+								op = op.substring(2); // removing A or Tree Name
 
-							String[] digits = op.split(":");
+								String[] digits = op.split(":");
 
-							for(String a :digits) 
-								toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt(a) - 1);
-
+								for (String a : digits)
+									toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt(a) - 1);
+							}
 							// getting node Bxxx...
 							op = ((Info7) token).b + "";
-							op = op.substring(2); // removing B or Tree Name
 							Node toUpdate = document.importNode(rootB, true);
+							if (op.length() > 1) {
+								op = op.substring(2); // removing B or Tree Name
 
-							String[] digitsB = op.split(":");
+								String[] digitsB = op.split(":");
 
-							for(String a :digitsB) 
-								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt(a) - 1);
-							
+								for (String a : digitsB)
+									toUpdate = toUpdate.getChildNodes().item(Integer.parseInt(a) - 1);
+							}
+
 							ArrayList<Node> attrA = Util.getArlFromNNM(toUpdateA.getAttributes());
 							ArrayList<Node> attrB = Util.getArlFromNNM(toUpdate.getAttributes());
 
 							reorder(attrA, attrB);
 
-							Element updAtt = document.createElement("update_Attribute");
+							Element updAtt = document.createElement("Update_Attribute");
 							for (int k = 0; k < tokens.size();) {
 								Info5 tokenA = tokens.get(k);
 								if (tokenA.x + 1 == tokenA.nx && tokenA.y + 1 == tokenA.ny) {
@@ -1013,11 +911,14 @@ public class XMLDiffAndPatch {
 									upd.setAttributeNode(change);
 									updAtt.appendChild(upd);
 
-//								upd.setAttributeNodeNS(
-//								str = "Update attribute " + attrA.get(tokenA.nx - 1).getNodeName() + " exanchge "
-//										+ (updates.x == -5 ? "Name to " + attrB.get(tokenA.ny - 1).getNodeName() + " " : " ")
-//										+ (updates.y == -5 ? "Value to " + attrB.get(tokenA.ny - 1).getNodeValue() + " " : " ");
-//								
+									// upd.setAttributeNodeNS(
+									// str = "Update attribute " + attrA.get(tokenA.nx - 1).getNodeName() + "
+									// exanchge "
+									// + (updates.x == -5 ? "Name to " + attrB.get(tokenA.ny - 1).getNodeName() + "
+									// " : " ")
+									// + (updates.y == -5 ? "Value to " + attrB.get(tokenA.ny - 1).getNodeValue() +
+									// " " : " ");
+									//
 
 									tokens.remove(k);
 								} else
@@ -1032,7 +933,7 @@ public class XMLDiffAndPatch {
 
 								if (tokenA.x + 1 == tokenA.nx && tokenA.y == tokenA.ny) {
 									Element toDel = document.createElement(attrA.get(tokenA.nx - 1).getNodeName());
-//									str = "Delete " + attrA.get(tokenA.nx).getNodeName();
+									// str = "Delete " + attrA.get(tokenA.nx).getNodeName();
 									delAtt.appendChild(toDel);
 									tokens.remove(k);
 								} else
@@ -1045,7 +946,7 @@ public class XMLDiffAndPatch {
 							for (int k = 0; k < tokens.size();) {
 								Info5 tokenA = tokens.get(k);
 								if (tokenA.x == tokenA.nx && tokenA.y + 1 == tokenA.ny) {
-//										str = "Insert " + " at " + tokenA.ny + " " + attrB.get(tokenA.ny - 1) + " ";
+									// str = "Insert " + " at " + tokenA.ny + " " + attrB.get(tokenA.ny - 1) + " ";
 									Node toIns = document.createElement(attrB.get(tokenA.ny - 1).getNodeName());
 									toIns.setTextContent(attrB.get(tokenA.ny - 1).getNodeValue());
 									insAtt.appendChild(toIns);
@@ -1056,39 +957,45 @@ public class XMLDiffAndPatch {
 							if (insAtt.getChildNodes().getLength() != 0)
 								attributes.appendChild(insAtt);
 
+							elt2.appendChild(attributes);
 						}
+						eltu.appendChild(elt2);
 					} else {
 						// getting node Axxx...
 						if (((Info7) token).x + 1 == ((Info7) token).nx
 								&& ((Info7) token).y + 1 == ((Info7) token).ny) {
 							String op = ((Info7) token).a + "";
-							op = op.substring(2); // removing B or Tree Name
 							Node toUpdateA = document.importNode(rootA, true);
+							if (op.length() > 1) {
+								op = op.substring(2); // removing B or Tree Name
 
-							String[] digits = op.split(":");
+								String[] digits = op.split(":");
 
-							for(String a :digits) 
-								toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt(a) - 1);
-							
+								for (String a : digits)
+									toUpdateA = toUpdateA.getChildNodes().item(Integer.parseInt(a) - 1);
+							}
 							toUpdateA = toUpdateA.getChildNodes().item(((Info7) token).nx - 1);
 
 							// getting node Bxxx...
 							op = ((Info7) token).b + "";
-							op = op.substring(2); // removing B or Tree Name
 							Node toUpdate = document.importNode(rootB, true);
+							if (op.length() > 1) {
+								op = op.substring(2); // removing B or Tree Name
 
-							String[] digitsB = op.split(":");
+								String[] digitsB = op.split(":");
 
-							for(String a :digitsB) 
-								toUpdate = toUpdate.getChildNodes().item(Integer.parseInt(a) - 1);
-							
+								for (String a : digitsB)
+									toUpdate = toUpdate.getChildNodes().item(Integer.parseInt(a) - 1);
+							}
+
 							toUpdate = toUpdate.getChildNodes().item(((Info7) token).ny - 1);
 
 							if (toUpdate.getNodeType() == Node.TEXT_NODE && toUpdateA.getNodeType() == Node.TEXT_NODE) {
 								// updating text nodes;
 								String[] nodeBWords = toUpdate.getTextContent().split("\\s+");
 
-								Element nodenametext = document.createElement(((Info7) token).a + "");
+								Element nodenametext = document
+										.createElement(((Info7) token).a + ":" + ((Info7) token).nx);
 								nodenametext.setAttribute("type", "textNode");
 								ArrayList<Object> tokens = (ES.get(i + 1));
 
@@ -1113,7 +1020,7 @@ public class XMLDiffAndPatch {
 										Element elt2 = document.createElement("w" + textToken.nx);
 										delWord.appendChild(elt2);
 										// ES.remove(token);
-//								tokens.remove(k);
+										// tokens.remove(k);
 									}
 								}
 								if (delWord.hasChildNodes())
@@ -1123,11 +1030,11 @@ public class XMLDiffAndPatch {
 								for (int k = 0; k < tokens.size(); k++) {
 									Info5 textToken = (Info5) tokens.get(k);
 									if (textToken.x == textToken.nx && (textToken).y + 1 == (textToken).ny) {
-										Element elt2 = document.createElement("w" + textToken.nx);
+										Element elt2 = document.createElement("w" + textToken.ny);
 										elt2.setTextContent(nodeBWords[textToken.ny - 1]);
 										insWord.appendChild(elt2);
 										// ES.remove(token);
-//								tokens.remove(k);
+										// tokens.remove(k);
 									}
 								}
 								if (insWord.hasChildNodes())
@@ -1142,30 +1049,36 @@ public class XMLDiffAndPatch {
 						else {
 							if (((Info7) token).x != -1 && ((Info7) token).x + 1 == ((Info7) token).nx
 									&& ((Info7) token).y == ((Info7) token).ny) {
-								Element elt2 = document.createElement(((Info7) token).a + ((Info7) token).nx + "");
+								Element elt2 = document
+										.createElement(((Info7) token).a + ":" + ((Info7) token).nx + "");
 								eltd.appendChild(elt2);
 							} else {
+
 								if (((Info7) token).x != -1 && (((Info7) token).y + 1 == ((Info7) token).ny)
 										&& (((Info7) token).x == ((Info7) token).nx)) {
+									// inserting nodes or trees
+
 									Element elt2;
 									elt2 = document.createElement(
-											"A" + (((Info7) token).b + ((Info7) token).ny + "").substring(1));
-									// elt.setAttribute("at", );
-									// elt.setTextContent(token.b+token.ny+"");
+											"A" + (((Info7) token).b + ":" + ((Info7) token).ny).substring(1));
 
-									String opc = ((Info7) token).b+":"+ ((Info7) token).ny + "";
-									opc = opc.substring(2); // removing B or Tree Name
+									String opc = ((Info7) token).b + ":" + ((Info7) token).ny + "";
 									Node toInsert = document.importNode(rootB, true);
+									if (opc.length() > 1) {
+										opc = opc.substring(2); // removing B or Tree Name
 
-									String[] digits = opc.split(":");
-									System.out.println(opc);
-									for(String a :digits) {
-										toInsert = toInsert.getChildNodes().item(Integer.parseInt(a) - 1);
-										
+										String[] digits = opc.split(":");
+
+										for (String a : digits) {
+											toInsert = toInsert.getChildNodes().item(Integer.parseInt(a) - 1);
+										}
 									}
-									
-					
-									elt2.appendChild(toInsert);
+									if (containedIn(toInsert, TreesInA)) {
+										// get the location in A
+										String location = getLocationIn(toInsert, rootA, "A");
+										elt2.setAttribute("containedAT", location);
+									} else
+										elt2.appendChild(toInsert);
 									elti.appendChild(elt2);
 
 									// ES.remove(token);
@@ -1180,51 +1093,14 @@ public class XMLDiffAndPatch {
 			}
 			if (eltu.hasChildNodes())
 				es.appendChild(eltu);
-//
-//			Element eltd;
-//			eltd = document.createElement("Delete");
-//			for (Object token : ES) {
-//				if(token.getClass()==Info7.class) {
-//
-//				if (((Info7)token).x != -1 && ((Info7)token).x + 1 ==((Info7)token).nx && ((Info7)token).y ==((Info7)token).ny) {
-//					Element elt2 = document.createElement(((Info7)token).a + ((Info7)token).nx + "");
-//					eltd.appendChild(elt2);
-//					// ES.remove(token);
-//				}
-//				}
-//			}
+
 			if (eltd.hasChildNodes())
 				es.appendChild(eltd);
-//			Element elti;
-//			elti = document.createElement("Insert");
-//			for (Object token : ES) {
-//				if(token.getClass()==Info7.class) {
-//				if (((Info7)token).x != -1 && (((Info7)token).y + 1 == ((Info7)token).ny)  && (((Info7)token).x == ((Info7)token).nx)) {
-//					Element elt2;
-//					elt2 = document.createElement("A" + (((Info7)token).b + ((Info7)token).ny + "").substring(1));
-//					// elt.setAttribute("at", );
-//					// elt.setTextContent(token.b+token.ny+"");
-//
-//					String opc = ((Info7)token).b + ((Info7)token).ny + "";
-//					opc = opc.substring(1); // removing B or Tree Name
-//					Node toInsert = document.importNode(rootB, true);
-//
-//					while (opc.length() > 0) {
-//						toInsert = toInsert.getChildNodes().item(Integer.parseInt("" + opc.charAt(0)) - 1);
-//						opc = opc.substring(1);
-//					}
-//					elt2.appendChild(toInsert);
-//					elti.appendChild(elt2);
-//
-//					// ES.remove(token);
-//
-//				}
-//			}
-//			}
+
 			if (elti.hasChildNodes())
 				es.appendChild(elti);
 
-			String fileName = "______PATCH_" + original.getName() + "_" + newFile.getName() + "_" + version + ".xml";
+			String fileName = "PATCH_" + original.getName() + "_" + newFile.getName() + "_" + version + ".xml";
 
 			WriteXMLtoFile(root, fileName, false);
 		} catch (DOMException | IllegalArgumentException | ParserConfigurationException
@@ -1232,6 +1108,23 @@ public class XMLDiffAndPatch {
 			e.printStackTrace();
 		}
 
+	}
+
+	private static String getLocationIn(Node toInsert, Node rootA, String treeName) {
+		Node elt = rootA;
+		StringBuilder toReturn = new StringBuilder(treeName);
+		if (elt.isEqualNode(toInsert)) {
+			return toReturn.toString();
+		} else {
+			NodeList a = elt.getChildNodes();
+			for (int i = 0; i < a.getLength(); i++) {
+				String str = getLocationIn(toInsert, a.item(i), treeName + ":" + (i + 1));
+				if (!str.equals("-1")) {
+					return str;
+				}
+			}
+			return "-1";
+		}
 	}
 
 	public static Node getRootNodeFromFile(String fileName) throws Exception {
@@ -1246,9 +1139,8 @@ public class XMLDiffAndPatch {
 		return root;
 	}
 
-	public static String applyPatchXML(String fileName, String ESXML) throws Exception {
+	public static String applyPatchXML(String fileName, String ESXML, boolean bypass) throws Exception {
 		try {
-			// randomDelete = "A" + getAlphaNumericString(9);
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.newDocument();
@@ -1258,28 +1150,32 @@ public class XMLDiffAndPatch {
 
 			Node ESroot = getRootNodeFromFile(ESXML);
 
-			if (Double.parseDouble(((Element) ESroot).getAttributes().item(1).getNodeValue()) != version) {
-				System.out.println("Error: Incompatible version");
-				return "";
+			if (!bypass) {
+				if (Double.parseDouble(((Element) ESroot).getAttributes().getNamedItem("version").getNodeValue()) != version) {
+					System.out.println("Error: Incompatible version");
+					return "";
+				}
 			}
-
+			
 			boolean fileNameMatches = ((Element) ESroot).getElementsByTagName("Original_File").item(0).getAttributes()
-					.item(1).getNodeValue().equals(fileName);
-
+					.item(1).getNodeValue().equals(fileName.substring(fileName.lastIndexOf("/")+1));
+			
 			String hs1 = ((Element) ESroot).getElementsByTagName("Original_File").item(0).getAttributes().item(0)
 					.getNodeValue();
 
-			File tmpInput = File.createTempFile("nnj", ".tmp");
-			WriteXMLtoFile(getRootNodeFromFile(fileName), tmpInput.getAbsolutePath(), true);
-			long crc = checksumBufferedInputStream(tmpInput);
-			String hashInput = Long.toHexString(crc);
-			tmpInput.delete();
+			if (!bypass) {
+				File tmpInput = File.createTempFile("nnj", ".tmp");
+				WriteXMLtoFile(getRootNodeFromFile(fileName), tmpInput.getAbsolutePath(), true);
+				long crc = checksumBufferedInputStream(tmpInput);
+				String hashInput = Long.toHexString(crc);
+				tmpInput.delete();
 
-			boolean HashCodeMatches = hs1.equals(hashInput);
+				boolean HashCodeMatches = hs1.equals(hashInput);
 
-			if (!HashCodeMatches) {
-				System.out.println("Error: Original File does not match!");
-				return "";
+				if (!HashCodeMatches) {
+					System.out.println("Error: Original File does not match!");
+					return "";
+				}
 			}
 			if (!fileNameMatches) {
 				// System.out.println(((Element)ESroot).getElementsByTagName("Original_File").item(0).getTextContent());
@@ -1304,16 +1200,133 @@ public class XMLDiffAndPatch {
 				for (int i = 0; i < upd.getLength(); i++) {
 					Node node = upd.item(i);
 					String op1 = node.getNodeName();
-					String op2 = node.getTextContent();
-					op1 = op1.substring(1); // remove A or Tree name
-
-					Node rc = rootC;
-
-					while (op1.length() > 0) {
-						rc = rc.getChildNodes().item(Integer.parseInt("" + op1.charAt(0)) - 1);
-						op1 = op1.substring(1);
+					String[] op = op1.split(":");
+					Node rc = rootC; // node to handle
+					for (int f = 1; f < op.length; f++) {
+						rc = rc.getChildNodes().item(Integer.parseInt(op[f]) - 1);
 					}
-					doc.renameNode(rc, null, op2);
+					if (rc.getNodeType() == Node.TEXT_NODE) {
+						Node updateWord = ((Element) node).getElementsByTagName("Update_Word").item(0);
+						Node deleteWord = ((Element) node).getElementsByTagName("Delete_Word").item(0);
+						Node insertWord = ((Element) node).getElementsByTagName("Insert_Word").item(0);
+
+						if (updateWord != null) {
+							NodeList updWordChilds = updateWord.getChildNodes();
+							String[] wordsInNode = rc.getTextContent().split("\\s+");
+							for (int uw = 0; uw < updWordChilds.getLength(); uw++) {
+								Node word = updWordChilds.item(uw);
+								int wordNumber = Integer.parseInt("" + word.getNodeName().substring(1));
+
+								String newWord = word.getTextContent();
+								wordsInNode[wordNumber - 1] = newWord;
+							}
+							StringBuilder sb = new StringBuilder();
+							for (String str : wordsInNode) {
+								sb.append(str + " ");
+							}
+							sb.delete(sb.length() - 1, sb.length()); // deleting extra " ";
+							rc.setTextContent(sb.toString());
+						}
+						if (deleteWord != null) {
+							NodeList delWordChilds = deleteWord.getChildNodes();
+							String[] wordsInNode = rc.getTextContent().split("\\s+");
+							for (int uw = 0; uw < delWordChilds.getLength(); uw++) {
+								Node word = delWordChilds.item(uw);
+								int wordNumber = Integer.parseInt("" + word.getNodeName().substring(1));
+								wordsInNode[wordNumber-1] = new String();
+
+							}
+							StringBuilder sb = new StringBuilder();
+							for (String str : wordsInNode) {
+								if (!str.isEmpty())
+									sb.append(str + " ");
+							}
+							sb.delete(sb.length() - 1, sb.length()); // deleting extra " ";
+							rc.setTextContent(sb.toString());
+						}
+						if (insertWord != null) {
+							NodeList insWordChilds = insertWord.getChildNodes();
+							String[] wordsInNodeArr = rc.getTextContent().split("\\s+");
+							
+							ArrayList<String> wordsInNode = new ArrayList<>(Arrays.asList(wordsInNodeArr));
+
+//							ArrayList<String> wordsInNode = new ArrayList<>();
+//							Collections.addAll(wordsInNode,wordsInNodeArr);
+							
+							for (int uw = 0; uw < insWordChilds.getLength(); uw++) {
+								Node word = insWordChilds.item(uw);
+								int wordNumber = Integer.parseInt("" + word.getNodeName().substring(1));
+								String newWord = word.getTextContent();
+								wordsInNode.add(wordNumber - 1, newWord);
+							}
+							StringBuilder sb = new StringBuilder();
+							for (int f = 0; f < wordsInNode.size(); f++) {
+								sb.append((wordsInNode.get(f) + " "));
+							}
+							sb.delete(sb.length() - 1, sb.length()); // deleting extra " ";
+							rc.setTextContent(sb.toString());
+						}
+
+					} else {
+						// Node or Element
+						Node label = ((Element) node).getElementsByTagName("Label").item(0);
+						if(label!=null)
+							doc.renameNode(rc, null, label.getTextContent());
+
+						Node Attributes = ((Element) node).getElementsByTagName("Attributes").item(0);
+
+						Node updateAtt = ((Element) node).getElementsByTagName("Update_Attribute").item(0);
+						Node deleteAtt = ((Element) node).getElementsByTagName("Delete_Attribute").item(0);
+						Node insertAtt = ((Element) node).getElementsByTagName("Insert_Attribute").item(0);
+
+						// do delete, update, insert
+						if (deleteAtt != null) {
+							NodeList delAtt = deleteAtt.getChildNodes();
+							for (int f = 0; f < delAtt.getLength(); f++) {
+								NamedNodeMap att = rc.getAttributes();
+								Node delElt = delAtt.item(f);
+								((Element) rc).removeAttribute(delElt.getNodeName());
+							}
+						}
+
+						if (updateAtt != null) {
+							NodeList updAtt = updateAtt.getChildNodes();
+							for (int f = 0; f < updAtt.getLength(); f++) {
+								Node updElt = updAtt.item(f);
+								String change = updElt.getAttributes().getNamedItem("change").getNodeValue();
+								if (change.equals("value")) {
+									String newVal = updElt.getAttributes().getNamedItem("newValue").getNodeValue();
+									((Element) rc).setAttribute(updElt.getNodeName(), newVal);
+								} else {
+									if (change.equals("key")) {
+										String newKey = updElt.getAttributes().getNamedItem("newKey").getNodeValue();
+										doc.renameNode(rc.getAttributes().getNamedItem(updElt.getNodeName()), null,
+												newKey);
+									} else {
+										if (change.equals("both")) {
+											String newVal = updElt.getAttributes().getNamedItem("newValue")
+													.getNodeValue();
+											String newKey = updElt.getAttributes().getNamedItem("newKey")
+													.getNodeValue();
+											((Element) rc).setAttribute(updElt.getNodeName(), newVal);
+											doc.renameNode(rc.getAttributes().getNamedItem(updElt.getNodeName()),
+													null, newKey);
+
+										}
+									}
+								}
+							}
+						}
+						if (insertAtt != null) {
+							NodeList insAtt = insertAtt.getChildNodes();
+							for (int f = 0; f < insAtt.getLength(); f++) {
+								Node insElt = insAtt.item(f);
+								String key = insElt.getNodeName();
+								String value = "" + insElt.getTextContent();
+								((Element) rc).setAttribute(key, value);
+							}
+						}
+					}
 
 				}
 			}
@@ -1322,17 +1335,15 @@ public class XMLDiffAndPatch {
 				NodeList del = delete.getChildNodes();
 				for (int i = del.getLength() - 1; i >= 0; i--) {
 					Node node = del.item(i);
-					String op = node.getNodeName();
-					op = op.substring(1); // removing A or Tree Name
+					String[] op = node.getNodeName().split(":");
 					Node temp = rootC;
-					while (op.length() > 1) {
-						temp = temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-						op = op.substring(1);
-					}
+					for (int f = 1; f < op.length - 1; f++) // get its parent
+						temp = temp.getChildNodes().item(Integer.parseInt("" + op[f]) - 1);
+
 					// temp.setNodeValue("BxvD8Xdlq0O8ejTS"); // value for delete
 					// doc.renameNode(temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0))
 					// - 1), null, randomDelete);
-					temp.removeChild(temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
+					temp.removeChild(temp.getChildNodes().item(Integer.parseInt("" + op[op.length - 1]) - 1));
 
 				}
 			}
@@ -1341,20 +1352,48 @@ public class XMLDiffAndPatch {
 				NodeList ins = insert.getChildNodes();
 				for (int i = 0; i < ins.getLength(); i++) {
 					Node node = ins.item(i);
-
-					Node toInsert = doc.importNode(node.getFirstChild(), true);
-
-					String op = node.getNodeName();
-					op = op.substring(1); // removing A or Tree Name
-					Node temp = rootC;
-					while (op.length() > 1) {
-						temp = temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
-						op = op.substring(1);
-					}
-					if (temp.hasChildNodes()) {
-						temp.insertBefore(toInsert, temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
+					if(node.hasAttributes() && node.getAttributes().getNamedItem("containedAT")!=null) {
+						String[] op = node.getAttributes().getNamedItem("containedAT").getNodeValue().split(":");
+						Node rootA = doc.importNode(getRootNodeFromFile(fileName), true);
+						for (int f = 1; f < op.length; f++) {
+							rootA = rootA.getChildNodes().item(Integer.parseInt(op[f]) - 1);
+						}
+						
+						String[] opc = node.getNodeName().split(":");
+						Node rc = rootC;
+						for (int f = 1; f < opc.length-1; f++) {
+							rc = rc.getChildNodes().item(Integer.parseInt(opc[f]) - 1);
+						}
+						rc.insertBefore(rootA, rc.getChildNodes().item(
+								Integer.parseInt(opc[opc.length-1])-1));
+						
+						
 					} else {
-						temp.appendChild(toInsert);
+
+						Node toInsert = doc.importNode(node.getFirstChild(), true);
+
+						String[] opc = node.getNodeName().split(":");
+						Node rc = rootC;
+						for (int f = 1; f < opc.length-1; f++) {
+							rc = rc.getChildNodes().item(Integer.parseInt(opc[f]) - 1);
+						}
+						rc.insertBefore(toInsert, rc.getChildNodes().item(
+								Integer.parseInt(opc[opc.length-1])-1));
+						
+						
+//						String op = node.getNodeName();
+//						op = op.substring(1); // removing A or Tree Name
+//						Node temp = rootC;
+//						while (op.length() > 1) {
+//							temp = temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1);
+//							op = op.substring(1);
+//						}
+//						if (temp.hasChildNodes()) {
+//							temp.insertBefore(toInsert,
+//									temp.getChildNodes().item(Integer.parseInt("" + op.charAt(0)) - 1));
+//						} else {
+//							temp.appendChild(toInsert);
+//						}
 					}
 				}
 			}
@@ -1525,12 +1564,14 @@ public class XMLDiffAndPatch {
 				clean(child);
 			else if (nodeType == Node.TEXT_NODE) {
 				String trimmedNodeVal = child.getNodeValue().trim();
+				trimmedNodeVal = trimmedNodeVal.replaceAll("\\s+", " "); // remove extra spaces
 				if (trimmedNodeVal.length() == 0)
 					node.removeChild(child);
 				else
 					child.setNodeValue(trimmedNodeVal);
-			} else if (nodeType == Node.COMMENT_NODE)
-				node.removeChild(child);
+			} else 
+				if (nodeType == Node.COMMENT_NODE)
+					node.removeChild(child);
 		}
 	}
 

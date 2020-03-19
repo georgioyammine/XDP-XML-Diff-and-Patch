@@ -18,8 +18,8 @@ import org.w3c.dom.NodeList;
 public class TestingNNJ {
 
 	public static void main(String[] args) throws Exception {
-		String f1 = "sample1.xml";
-		String f2 = "sampleDoc (original).xml";
+		String f1 = "E1_A.xml";
+		String f2 = "E1_A2.xml";
 		File file = new File(f1);
 		File file2 = new File(f2);
 
@@ -61,9 +61,9 @@ public class TestingNNJ {
 //				+ file2.getName().substring(0, file.getName().indexOf(".")) + ".xml");
 		
 //		NNJ.editScriptToXML((ArrayList<NNJ.XYZ>) nnj.get(1), file, file2,root2,1);
-		
+		System.out.println(NNJ.TEDandEditScript(f1,f2));
 //		System.out.println("Distance = "+NNJ.TEDandEditScript(f1, f2));
-		NNJ.applyPatchXML(f1, "PATCH_sample1.xml_sampleDoc (original).xml_0.1_2.xml");
+//		NNJ.applyPatchXML(f1, "PATCH_sample1.xml_sampleDoc (original).xml_0.1_2.xml");
 		// NodeList staffList = root.getChildNodes();
 		// hhhhh
 		// se
