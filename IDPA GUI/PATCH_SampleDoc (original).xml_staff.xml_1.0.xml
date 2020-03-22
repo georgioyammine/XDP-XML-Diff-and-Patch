@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<XML_Patch distance="19" reversible="yes" similarity="83.33%" version="1.0">
+  <Original_File crc32="8bcc686f" name="SampleDoc (original).xml"/>
+  <Patched_File crc32="791f01b5" name="staff.xml"/>
+  <Edit_Script>
+    <Update>
+      <A.5.4.1.1.1 with="B.5.4.1.1.1">
+        <Delete_Word>
+          <w5>Awards</w5>
+        </Delete_Word>
+      </A.5.4.1.1.1>
+      <A.6.1.2.2.3.1.1 with="B.6.1.2.2.3.1.1">
+        <Label oldValue="format">dataRep</Label>
+      </A.6.1.2.2.3.1.1>
+      <A.6.1.2.3.2.2 with="B.6.1.2.3.2.2">
+        <Attributes>
+          <Update_Attribute>
+            <AuthorPosition change="value" newValue="02" oldValue="01"/>
+          </Update_Attribute>
+        </Attributes>
+      </A.6.1.2.3.2.2>
+      <A.6.1.2.3.2.2.1 with="B.6.1.2.3.2.2.1">
+        <Update_Word>
+          <w1 oldValue="S." with="w1">R.</w1>
+          <w2 oldValue="Staab" with="w2">Studer</w2>
+        </Update_Word>
+      </A.6.1.2.3.2.2.1>
+      <A.6.1.2.4.3 with="B.6.1.2.4.3">
+        <Label oldValue="availableSources">Sources</Label>
+      </A.6.1.2.4.3>
+    </Update>
+    <Delete>
+      <A.6.1.2.2.1.1>Data Modelling versus Ontology Engineering</A.6.1.2.2.1.1>
+      <A.6.1.2.3.2.3 containedAT="B.6.1.2.3.2.2"/>
+    </Delete>
+    <Insert>
+      <A.6.5.2.1.3.1.2>
+        <format>JSON</format>
+      </A.6.5.2.1.3.1.2>
+      <A.6.6.2.1.3.1.1>
+        <format/>
+      </A.6.6.2.1.3.1.1>
+      <A.6.6.2.2.2.4>
+        <author AuthorPosition="03">J. Connor</author>
+      </A.6.6.2.2.2.4>
+    </Insert>
+  </Edit_Script>
+</XML_Patch>
