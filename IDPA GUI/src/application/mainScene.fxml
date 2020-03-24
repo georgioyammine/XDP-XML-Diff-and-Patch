@@ -62,7 +62,7 @@
                   </AnchorPane>
                </content>
             </Tab>
-            <Tab text="About">
+            <Tab onSelectionChanged="#setDefaultCosts" text="About">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
@@ -82,7 +82,7 @@
                                 <content>
                                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="265.0" prefWidth="552.0">
                                        <children>
-                                          <Label alignment="TOP_LEFT" layoutX="8.0" layoutY="8.0" prefHeight="157.0" prefWidth="535.0" text="\${'XDP: XML Diff and Patch is a a tool built in Java that compares two XML documents (structure and content).\n\nThis Application is part of a project in Lebaneses American University, Course:  Intelligent Data Processing and Application (COE 543/743).\n\nThis Tool is build by Georgio Yammine and Rami Naffah.'}" textFill="#f8f8f1" wrapText="true">
+                                          <Label alignment="TOP_LEFT" layoutX="8.0" layoutY="8.0" prefHeight="157.0" prefWidth="535.0" text="${'XDP: XML Diff and Patch is a a tool built in Java that compares two XML documents (structure and content).\n\nThis Application is part of a project in Lebanese American University, Course:  Intelligent Data Processing and Applications (COE 543/743).\n\nThis Tool is built by Georgio Yammine and Rami Naffah.'}" textFill="#f8f8f1" wrapText="true">
                                              <font>
                                                 <Font name="System Bold" size="12.0" />
                                              </font>
@@ -92,7 +92,7 @@
                                                 <Image url="@../githubw.png" />
                                              </image>
                                           </ImageView>
-                                          <Label alignment="TOP_LEFT" layoutX="90.0" layoutY="181.0" prefHeight="24.0" prefWidth="423.0" text="https://github.com/georgioyammine/XDP_XML-Diff-and-Patching" textFill="#f8f8f1" wrapText="true">
+                                          <Label alignment="TOP_LEFT" layoutX="90.0" layoutY="181.0" onMouseClicked="#copyHandle" prefHeight="24.0" prefWidth="423.0" text="https://github.com/georgioyammine/XDP_XML-Diff-and-Patching" textFill="#f8f8f1" wrapText="true">
                                              <font>
                                                 <Font name="System Bold" size="12.0" />
                                              </font>
@@ -100,7 +100,7 @@
                                        </children></AnchorPane>
                                 </content>
                               </Tab>
-                              <Tab id="stab" text="Settings">
+                              <Tab id="stab" onSelectionChanged="#setDefaultCosts" text="Settings">
                                 <content>
                                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                        <children>
@@ -109,8 +109,8 @@
                                                 <Font name="System Bold" size="12.0" />
                                              </font>
                                           </Label>
-                                          <JFXTextField layoutX="150.0" layoutY="38.0" prefHeight="25.0" prefWidth="38.0" />
-                                          <JFXButton fx:id="load1Diff1" layoutX="231.0" layoutY="178.0" onAction="#handleLoad1Diff" prefHeight="41.0" prefWidth="90.0" style="-fx-border-radius: 20;" text="Apply" />
+                                          <JFXTextField fx:id="updateRootBox" focusColor="#ffff8d" layoutX="150.0" layoutY="38.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <JFXButton fx:id="applyBtn" layoutX="231.0" layoutY="178.0" onAction="#applySettingsHandle" prefHeight="41.0" prefWidth="90.0" style="-fx-border-radius: 20;" text="Apply" />
                                           <Label layoutX="229.0" layoutY="14.0" text="Changing Costs" textFill="#f8f8f1">
                                              <font>
                                                 <Font name="System Bold" size="13.0" />
@@ -121,37 +121,37 @@
                                                 <Font name="System Bold" size="12.0" />
                                              </font>
                                           </Label>
-                                          <JFXTextField layoutX="150.0" layoutY="75.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <JFXTextField fx:id="insertContainedBox" focusColor="#ffff8d" layoutX="150.0" layoutY="75.0" prefHeight="25.0" prefWidth="38.0" />
                                           <Label layoutX="30.0" layoutY="121.0" text="deleteContained " textFill="#f8f8f1">
                                              <font>
                                                 <Font name="System Bold" size="12.0" />
                                              </font>
                                           </Label>
-                                          <JFXTextField layoutX="150.0" layoutY="109.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <JFXTextField fx:id="deleteContainedBox" focusColor="#ffff8d" layoutX="150.0" layoutY="109.0" prefHeight="25.0" prefWidth="38.0" />
                                           <Label layoutX="30.0" layoutY="156.0" text="deleteOrInsertLeaf " textFill="#f8f8f1">
                                              <font>
                                                 <Font name="System Bold" size="12.0" />
                                              </font>
                                           </Label>
-                                          <JFXTextField layoutX="150.0" layoutY="143.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <JFXTextField fx:id="leafOpBox" focusColor="#ffff8d" layoutX="150.0" layoutY="143.0" prefHeight="25.0" prefWidth="38.0" />
                                           <Label layoutX="358.0" layoutY="72.0" text="attributeNameCost " textFill="#f8f8f1">
                                              <font>
                                                 <Font name="System Bold" size="12.0" />
                                              </font>
                                           </Label>
-                                          <JFXTextField layoutX="478.0" layoutY="59.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <JFXTextField fx:id="attrNameBox" focusColor="#ffff8d" layoutX="478.0" layoutY="59.0" prefHeight="25.0" prefWidth="38.0" />
                                           <Label layoutX="358.0" layoutY="109.0" text="attributeValueCost " textFill="#f8f8f1">
                                              <font>
                                                 <Font name="System Bold" size="12.0" />
                                              </font>
                                           </Label>
-                                          <JFXTextField layoutX="478.0" layoutY="96.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <JFXTextField fx:id="attrValBox" focusColor="#ffff8d" layoutX="478.0" layoutY="96.0" prefHeight="25.0" prefWidth="38.0" />
                                           <Label layoutX="358.0" layoutY="142.0" text="textTokenCost " textFill="#f8f8f1">
                                              <font>
                                                 <Font name="System Bold" size="12.0" />
                                              </font>
                                           </Label>
-                                          <JFXTextField layoutX="478.0" layoutY="130.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <JFXTextField fx:id="textTokenBox" focusColor="#ffff8d" layoutX="478.0" layoutY="130.0" prefHeight="25.0" prefWidth="38.0" />
                                        </children></AnchorPane>
                                 </content>
                               </Tab>
@@ -159,7 +159,7 @@
                                 <content>
                                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                        <children>
-                                          <Label alignment="TOP_LEFT" layoutX="14.0" layoutY="10.0" prefHeight="247.0" prefWidth="526.0" text="\${'• Use Get Diff to perform comparison between XML A and B, select reversable to get A&lt;-&gt;&gt;B or unselect it to get A-&gt;B, The output file will be in the directery of the app and the absoulte path will be printed at the buttom of the page.\n\n• Use Reverse Diff to reverse to transform a reversable patch into the other order (A&lt;-&gt;&gt;B =&gt; A&lt;&lt;-&gt;B), if a patch is not reversable, you will get an error message, otherwise you will get the absolute path of the file at the buttom of the page.\n\n• Use Apply Patch to Patch doc A and (A-&gt;B or A&lt;-&gt;&gt;B) to get back document B. The absolute path will be displayed at the buttom of the page. A message will appear to confirm if the patch is successful by comparing Hash CheckSum.\n\n**All output files will be in the directory of the App**\n**Click on any path to copy it to the clipboard**'}" textFill="#f8f8f1" wrapText="true">
+                                          <Label alignment="TOP_LEFT" layoutX="14.0" layoutY="10.0" prefHeight="247.0" prefWidth="526.0" text="${'• Use Get Diff to perform comparison between XML A and B, select reversible to get A&lt;-&gt;&gt;B or unselect it to get A-&gt;B, The output file will be in the directory of the app and the absolute path will be printed at the bottom of the page.\n\n• Use Reverse Diff to reverse a reversible patch into the other direction (A&lt;-&gt;&gt;B =&gt; A&lt;&lt;-&gt;B), if a patch is not reversible, you will get an error message, otherwise you will get the absolute path of the file at the bottom of the page.\n\n• Use Apply Patch to patch doc A and (A-&gt;B or A&lt;-&gt;&gt;B) to get back document B. The absolute path will be displayed at the bottom of the page. A message will appear to confirm if the patch is successful by comparing Hash CheckSums.\n\n**All output files will be in the directory of the App**\n**Click on any path to copy it to the clipboard**'}" textFill="#f8f8f1" wrapText="true">
                                              <font>
                                                 <Font name="System Bold" size="12.0" />
                                              </font>

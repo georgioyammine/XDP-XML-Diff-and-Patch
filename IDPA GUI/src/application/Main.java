@@ -15,9 +15,9 @@ public class Main extends Application {
 	@Override
 	public void start(Stage stage) throws Exception {
 		Parent root = FXMLLoader.load(getClass().getResource("mainScene.fxml"));
-		
+
 		Scene scene = new Scene(root, 800, 450);
-	
+
 		stage.setScene(scene);
 		stage.setResizable(false);
 		stage.setTitle("XDP: XML Diff And Patch");
@@ -25,7 +25,7 @@ public class Main extends Application {
 		stage.getIcons().add(new Image("icon-main@3x.png"));
 //		stage.getIcons().add(new Image("icon-main@2x.png"));
 //		stage.getIcons().add(new Image("icon-main.png"));
-//		stage.getIcons().add(new Image(Main.class.getResourceAsStream( "icon.ico" ))); 
+//		stage.getIcons().add(new Image(Main.class.getResourceAsStream( "icon.ico" )));
 		stage.show();
 
 	}

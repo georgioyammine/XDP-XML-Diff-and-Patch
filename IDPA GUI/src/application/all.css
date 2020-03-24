@@ -1,4 +1,4 @@
-*{  
+*{
     -fx-primary : #2A2E37;
     -fx-secondary : #FFFF8D;
     -fx-primarytext : #B2B2B2;
@@ -49,4 +49,11 @@
     -fx-border-radius: 20px;
     -fx-background-radius: 20px;
     -fx-font-size: 12pt;
+}
+.text-field
+{
+    -fx-text-fill: -fx-primarytext;
+    -fx-font-size : 12pt;
+    -jfx-focus-color: -fx-secondary;
+   /*  -fx-text-fill: derive(-fx-secondary, 20%);*/
 }

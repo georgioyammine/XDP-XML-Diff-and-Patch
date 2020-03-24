@@ -31,13 +31,13 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 
 public class XMLDiffAndPatch extends Observable {
-	final static int updateRootName = 1;
-	final static int insertContained = 1;
-	final static int deleteContained = 1;
-	final static int deleteOrInsertLeaf = 1; // 3
-	final static int attributeNameCost = 1; // 2
-	final static int attributeValueCost = 1;
-	final static int contentTokenCost = 1;
+	static int updateRootName = 1;
+    static int insertContained = 1;
+	static int deleteContained = 1;
+	static int deleteOrInsertLeaf = 1; // 3
+	static int attributeNameCost = 1; // 2
+	static int attributeValueCost = 1;
+	static int contentTokenCost = 1;
 
 	private static HashMap<Node, Integer> costsOfTrees = new HashMap<>();
 	private static HashMap<Node, Integer> costsOfTreesBinA = new HashMap<>();
@@ -47,11 +47,11 @@ public class XMLDiffAndPatch extends Observable {
 	private static ArrayList<Node> TreesInB = new ArrayList<>();
 
 	private static double version = 1.0;
-	
+
 	private static final DoubleProperty progressProperty = new SimpleDoubleProperty(0.0);
 
 	public static DoubleProperty getProgressProperty() {
-		
+
 	        return progressProperty;
 	}
 
@@ -130,7 +130,7 @@ public class XMLDiffAndPatch extends Observable {
 			del.add(new Info7(R1, R2, i - 1, 0, i, 0, dist[i][0]));
 			pointers[i][0] = del;
 		}
-		
+
 		if (print) {
 //			System.out.println("Step 1 Done");
 			progressProperty.set(0.1);
@@ -146,7 +146,7 @@ public class XMLDiffAndPatch extends Observable {
 			progressProperty.set(0.15);
 		}
 		for (int i = 1; i <= m; i++) {
-			
+
 			if (print) {
 //				System.out.println("Progress: " + i + "/" + m);
 				progressProperty.set(0.15+0.75*(i/(m+0.0)));
@@ -359,7 +359,7 @@ public class XMLDiffAndPatch extends Observable {
 
 		TreesInA = new ArrayList<>();
 		TreesInB = new ArrayList<>();
-		
+
 		progressProperty.set(0.0);
 		File file = new File(fileName1);
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -379,7 +379,7 @@ public class XMLDiffAndPatch extends Observable {
 
 		clean(root);
 		clean(root2);
-		
+
 		getTreesInA(root); // pre-processing
 		getTreesInB(root2); // pre-processing
 		progressProperty.set(0.05);
@@ -1982,8 +1982,8 @@ public class XMLDiffAndPatch extends Observable {
 			String hashInput2 = Long.toHexString(crc2);
 			tmpInput2.delete();
 			ArrayList<String> arl= new ArrayList<>();
-			
-			
+
+
 			if (!targetHash.equals(hashInput2)) {
 				System.out.println("Wrong Result Expected: Hash checksum does not match");
 				arl.add("Wrong Result Expected: Hash checksum does not match");
@@ -2051,7 +2051,7 @@ public class XMLDiffAndPatch extends Observable {
 	public static void clean(Node node) {
 		node.normalize();
 		NodeList childNodes = node.getChildNodes();
-		
+
 		for (int n = childNodes.getLength() - 1; n >= 0; n--) {
 			Node child = childNodes.item(n);
 			short nodeType = child.getNodeType();
