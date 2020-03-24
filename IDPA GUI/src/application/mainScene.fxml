@@ -2,9 +2,13 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXCheckBox?>
+<?import com.jfoenix.controls.JFXProgressBar?>
 <?import com.jfoenix.controls.JFXTabPane?>
+<?import com.jfoenix.controls.JFXTextField?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tab?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
@@ -16,14 +20,15 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="800.0">
                      <children>
-                        <JFXButton fx:id="load1" layoutX="47.0" layoutY="52.0" onAction="#handleLoad1" prefHeight="41.0" prefWidth="147.0" style="-fx-border-radius: 20;" text="Load XML File 1" />
-                        <JFXCheckBox fx:id="check1" checkedColor="#e8d140" layoutX="73.0" layoutY="219.0" text="Reversible" textFill="#b2b2b2" />
+                        <JFXButton fx:id="load1Diff" layoutX="47.0" layoutY="52.0" onAction="#handleLoad1Diff" prefHeight="41.0" prefWidth="147.0" style="-fx-border-radius: 20;" text="Load XML File A" />
+                        <JFXCheckBox fx:id="reversible" checkedColor="#e8d140" layoutX="73.0" layoutY="219.0" text="Reversible" textFill="#b2b2b2" />
                         <JFXButton fx:id="diffBtn" layoutX="326.0" layoutY="213.0" onAction="#getDiff" prefHeight="54.0" prefWidth="149.0" text="Get Diff" />
-                        <JFXButton fx:id="load2" layoutX="47.0" layoutY="127.0" onAction="#handleLoad2" prefHeight="41.0" prefWidth="147.0" text="Load XML File 2" />
-                        <Label fx:id="resultDiff" alignment="CENTER" layoutX="11.0" layoutY="287.0" prefHeight="34.0" prefWidth="779.0" text="result" textFill="#b2b2b2" />
-                        <Label fx:id="abs2" layoutX="218.0" layoutY="131.0" prefHeight="34.0" prefWidth="528.0" textFill="#b2b2b2" />
-                        <Label fx:id="abs1" layoutX="218.0" layoutY="56.0" prefHeight="34.0" prefWidth="523.0" textFill="#b2b2b2" />
-                        <Label fx:id="diffPath" alignment="CENTER" layoutX="6.0" layoutY="321.0" onMouseClicked="#copyDiffPath" prefHeight="34.0" prefWidth="784.0" text="Path" textFill="#b2b2b2" />
+                        <JFXButton fx:id="load2Diff" layoutX="47.0" layoutY="127.0" onAction="#handleLoad2Diff" prefHeight="41.0" prefWidth="147.0" text="Load XML File B" />
+                        <Label fx:id="resultDiff" alignment="CENTER" layoutX="11.0" layoutY="285.0" prefHeight="34.0" prefWidth="779.0" text="result" textFill="#b2b2b2" wrapText="true" />
+                        <Label fx:id="abs2Diff" layoutX="218.0" layoutY="121.0" onMouseClicked="#copyHandle" prefHeight="53.0" prefWidth="528.0" text="C:\Users\User\Documents\IDPA Project - XML Diff and Parsing\IDPA GUI\PATCH_afwikibooks-20200101-pages-meta-current.xml_afwikibooks-20200120-pages-meta-current.xml_1.0.xml" textFill="#b2b2b2" textOverrun="LEADING_ELLIPSIS" wrapText="true" />
+                        <Label fx:id="abs1Diff" layoutX="218.0" layoutY="47.0" onMouseClicked="#copyHandle" prefHeight="55.0" prefWidth="523.0" text="C:\Users\User\Documents\IDPA Project - XML Diff and Parsing\I" textFill="#b2b2b2" textOverrun="LEADING_ELLIPSIS" wrapText="true" />
+                        <Label fx:id="diffPath" alignment="CENTER" layoutX="6.0" layoutY="321.0" onMouseClicked="#copyHandle" prefHeight="34.0" prefWidth="784.0" text="C:\Users\User\Documents\IDPA Project - XML Diff and Parsing\IDPA GUI\PATCH_afwikibooks-20200101-pages-meta-current.xml_afwikibooks-20200120-pages-meta-current.xml_1.0.xml" textAlignment="CENTER" textFill="#b2b2b2" textOverrun="LEADING_ELLIPSIS" wrapText="true" />
+                        <JFXProgressBar fx:id="progressBar1" layoutX="301.0" layoutY="375.0" progress="1.0" />
                      </children>
                   </AnchorPane>
               </content>
@@ -32,13 +37,11 @@
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="800.0">
                      <children>
-                        <JFXButton fx:id="load11" layoutX="47.0" layoutY="52.0" onAction="#handleLoad3" prefHeight="41.0" prefWidth="147.0" style="-fx-border-radius: 20;" text="Load XML File 1" />
+                        <JFXButton fx:id="load1Reverse" layoutX="47.0" layoutY="52.0" onAction="#handleLoad1Reverse" prefHeight="41.0" prefWidth="147.0" style="-fx-border-radius: 20;" text="Load Diff File" />
                         <JFXButton fx:id="reverseBtn" layoutX="326.0" layoutY="213.0" onAction="#reverseDiff" prefHeight="54.0" prefWidth="149.0" text="Reverse Diff" />
-                        <JFXButton fx:id="load22" layoutX="47.0" layoutY="127.0" onAction="#handleLoad4" prefHeight="41.0" prefWidth="147.0" text="Load XML File 2" />
-                        <Label fx:id="reversePath" alignment="CENTER" layoutX="4.0" layoutY="326.0" onMouseClicked="#copyReversePath" prefHeight="34.0" prefWidth="793.0" text="Path" textFill="#b2b2b2" />
-                        <Label fx:id="abs4" layoutX="218.0" layoutY="131.0" prefHeight="34.0" prefWidth="545.0" textFill="#b2b2b2" />
-                        <Label fx:id="abs3" layoutX="218.0" layoutY="56.0" prefHeight="34.0" prefWidth="542.0" textFill="#b2b2b2" />
-                        <Label fx:id="reverseCheck" alignment="CENTER" layoutX="4.0" layoutY="284.0" prefHeight="34.0" prefWidth="793.0" text="Check" textFill="#b2b2b2" />
+                        <Label fx:id="reversePath" alignment="CENTER" layoutX="4.0" layoutY="326.0" onMouseClicked="#copyHandle" prefHeight="34.0" prefWidth="793.0" text="C:\Users\User\Documents\IDPA Project - XML Diff and Parsing\IDPA GUI\PATCH_afwikibooks-20200101-pages-meta-current.xml_afwikibooks-20200120-pages-meta-current.xml_1.0.xml" textAlignment="CENTER" textFill="#b2b2b2" textOverrun="LEADING_ELLIPSIS" wrapText="true" />
+                        <Label fx:id="abs1Reverse" layoutX="218.0" layoutY="44.0" onMouseClicked="#copyHandle" prefHeight="57.0" prefWidth="542.0" text="C:\Users\User\Documents\IDPA Project - XML Diff and Parsing\IDPA GUI\PATCH_afwikibooks-20200101-pages-meta-current.xml_afwikibooks-20200120-pages-meta-current.xml_1.0.xml" textFill="#b2b2b2" textOverrun="LEADING_ELLIPSIS" wrapText="true" />
+                        <Label fx:id="reverseCheck" alignment="CENTER" layoutX="4.0" layoutY="284.0" prefHeight="34.0" prefWidth="793.0" text="Check" textFill="#b2b2b2" wrapText="true" />
                      </children>
                   </AnchorPane>
                </content>
@@ -47,14 +50,14 @@
                <content>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="800.0">
                      <children>
-                        <JFXButton fx:id="load3" layoutX="47.0" layoutY="52.0" onAction="#handleLoad5" prefHeight="41.0" prefWidth="147.0" style="-fx-border-radius: 20;" text="Load XML File " />
-                        <JFXCheckBox fx:id="check11" checkedColor="#e8d140" layoutX="73.0" layoutY="219.0" text="Bypass" textFill="#b2b2b2" />
+                        <JFXButton fx:id="load1Patch" layoutX="47.0" layoutY="52.0" onAction="#handleLoad1Patch" prefHeight="41.0" prefWidth="147.0" style="-fx-border-radius: 20;" text="Load XML File " />
+                        <JFXCheckBox fx:id="bypass" checkedColor="#e8d140" layoutX="73.0" layoutY="219.0" text="Bypass CheckSum Verification" textFill="#b2b2b2" />
                         <JFXButton fx:id="patchBtn" layoutX="326.0" layoutY="213.0" onAction="#patch" prefHeight="54.0" prefWidth="149.0" text="Patch" />
-                        <JFXButton fx:id="load4" layoutX="47.0" layoutY="127.0" onAction="#handleLoad6" prefHeight="41.0" prefWidth="147.0" text="Load Diff File" />
-                        <Label fx:id="patchCheck" alignment="CENTER" layoutX="6.0" layoutY="286.0" prefHeight="34.0" prefWidth="785.0" text="Check" textFill="#b2b2b2" />
-                        <Label fx:id="abs6" layoutX="218.0" layoutY="131.0" prefHeight="34.0" prefWidth="530.0" textFill="#b2b2b2" />
-                        <Label fx:id="abs5" layoutX="218.0" layoutY="56.0" prefHeight="34.0" prefWidth="526.0" textFill="#b2b2b2" />
-                        <Label fx:id="patchPath" alignment="CENTER" layoutX="16.0" layoutY="320.0" onMouseClicked="#copyPatchPath" prefHeight="34.0" prefWidth="771.0" text="Path" textFill="#b2b2b2" />
+                        <JFXButton fx:id="load2Patch" layoutX="47.0" layoutY="127.0" onAction="#handleLoad2Patch" prefHeight="41.0" prefWidth="147.0" text="Load Diff File" />
+                        <Label fx:id="patchCheck" alignment="CENTER" layoutX="6.0" layoutY="286.0" prefHeight="34.0" prefWidth="785.0" text="Check" textFill="#b2b2b2" wrapText="true" />
+                        <Label fx:id="abs1Patch" layoutX="218.0" layoutY="124.0" onMouseClicked="#copyHandle" prefHeight="52.0" prefWidth="530.0" text="C:\Users\User\Documents\IDPA Project - XML Diff and Parsing\IDPA GUI\PATCH_afwikibooks-20200101-pages-meta-current.xml_afwikibooks-20200120-pages-meta-current.xml_1.0.xml" textFill="#b2b2b2" textOverrun="LEADING_ELLIPSIS" wrapText="true" />
+                        <Label fx:id="abs2Patch" layoutX="218.0" layoutY="47.0" onMouseClicked="#copyHandle" prefHeight="55.0" prefWidth="526.0" text="C:\Users\User\Documents\IDPA Project - XML Diff and Parsing\IDPA GUI\PATCH_afwikibooks-20200101-pages-meta-current.xml_afwikibooks-20200120-pages-meta-current.xml_1.0.xml" textFill="#b2b2b2" textOverrun="LEADING_ELLIPSIS" wrapText="true" />
+                        <Label fx:id="patchPath" alignment="CENTER" layoutX="16.0" layoutY="320.0" onMouseClicked="#copyHandle" prefHeight="53.0" prefWidth="771.0" text="C:\Users\User\Documents\IDPA Project - XML Diff and Parsing\IDPA GUI\PATCH_afwikibooks-20200101-pages-meta-current.xml_afwikibooks-20200120-pages-meta-current.xml_1.0.xmlC:\Users\User\Documents\IDPA Project - XML Diff and Parsing\IDPA GUI\PATCH_afwikibooks-20200101-pages-meta-current.xml_afwikibooks-20200120-pages-meta-current.xml_1.0.xml" textAlignment="CENTER" textFill="#b2b2b2" textOverrun="LEADING_ELLIPSIS" wrapText="true" />
                      </children>
                   </AnchorPane>
                </content>
@@ -63,11 +66,109 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Label alignment="CENTER" layoutX="225.0" layoutY="14.0" prefHeight="84.0" prefWidth="350.0" text="XML Diff and Patch" textAlignment="CENTER" textFill="#f8f8f1">
+                        <Label alignment="CENTER" layoutX="225.0" layoutY="14.0" prefHeight="84.0" prefWidth="350.0" text="XDP: XML Diff and Patch" textAlignment="CENTER" textFill="#f8f8f1">
                            <font>
                               <Font size="30.0" />
                            </font>
                         </Label>
+                        <ImageView fitHeight="181.0" fitWidth="173.0" layoutX="35.0" layoutY="131.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../iconNew.png" />
+                           </image>
+                        </ImageView>
+                        <JFXTabPane layoutX="212.0" layoutY="94.0" prefHeight="286.0" prefWidth="552.0">
+                           <tabs>
+                              <Tab id="stab" text="Info">
+                                <content>
+                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="265.0" prefWidth="552.0">
+                                       <children>
+                                          <Label alignment="TOP_LEFT" layoutX="8.0" layoutY="8.0" prefHeight="157.0" prefWidth="535.0" text="\${'XDP: XML Diff and Patch is a a tool built in Java that compares two XML documents (structure and content).\n\nThis Application is part of a project in Lebaneses American University, Course:  Intelligent Data Processing and Application (COE 543/743).\n\nThis Tool is build by Georgio Yammine and Rami Naffah.'}" textFill="#f8f8f1" wrapText="true">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <ImageView fitHeight="43.0" fitWidth="51.0" layoutX="39.0" layoutY="169.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../githubw.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Label alignment="TOP_LEFT" layoutX="90.0" layoutY="181.0" prefHeight="24.0" prefWidth="423.0" text="https://github.com/georgioyammine/XDP_XML-Diff-and-Patching" textFill="#f8f8f1" wrapText="true">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children></AnchorPane>
+                                </content>
+                              </Tab>
+                              <Tab id="stab" text="Settings">
+                                <content>
+                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                       <children>
+                                          <Label layoutX="30.0" layoutY="51.0" text="updateRootName " textFill="#f8f8f1">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <JFXTextField layoutX="150.0" layoutY="38.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <JFXButton fx:id="load1Diff1" layoutX="231.0" layoutY="178.0" onAction="#handleLoad1Diff" prefHeight="41.0" prefWidth="90.0" style="-fx-border-radius: 20;" text="Apply" />
+                                          <Label layoutX="229.0" layoutY="14.0" text="Changing Costs" textFill="#f8f8f1">
+                                             <font>
+                                                <Font name="System Bold" size="13.0" />
+                                             </font>
+                                          </Label>
+                                          <Label layoutX="30.0" layoutY="88.0" text="insertContained " textFill="#f8f8f1">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <JFXTextField layoutX="150.0" layoutY="75.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <Label layoutX="30.0" layoutY="121.0" text="deleteContained " textFill="#f8f8f1">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <JFXTextField layoutX="150.0" layoutY="109.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <Label layoutX="30.0" layoutY="156.0" text="deleteOrInsertLeaf " textFill="#f8f8f1">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <JFXTextField layoutX="150.0" layoutY="143.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <Label layoutX="358.0" layoutY="72.0" text="attributeNameCost " textFill="#f8f8f1">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <JFXTextField layoutX="478.0" layoutY="59.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <Label layoutX="358.0" layoutY="109.0" text="attributeValueCost " textFill="#f8f8f1">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <JFXTextField layoutX="478.0" layoutY="96.0" prefHeight="25.0" prefWidth="38.0" />
+                                          <Label layoutX="358.0" layoutY="142.0" text="textTokenCost " textFill="#f8f8f1">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <JFXTextField layoutX="478.0" layoutY="130.0" prefHeight="25.0" prefWidth="38.0" />
+                                       </children></AnchorPane>
+                                </content>
+                              </Tab>
+                              <Tab id="stab" text="Help">
+                                <content>
+                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                       <children>
+                                          <Label alignment="TOP_LEFT" layoutX="14.0" layoutY="10.0" prefHeight="247.0" prefWidth="526.0" text="\${'• Use Get Diff to perform comparison between XML A and B, select reversable to get A&lt;-&gt;&gt;B or unselect it to get A-&gt;B, The output file will be in the directery of the app and the absoulte path will be printed at the buttom of the page.\n\n• Use Reverse Diff to reverse to transform a reversable patch into the other order (A&lt;-&gt;&gt;B =&gt; A&lt;&lt;-&gt;B), if a patch is not reversable, you will get an error message, otherwise you will get the absolute path of the file at the buttom of the page.\n\n• Use Apply Patch to Patch doc A and (A-&gt;B or A&lt;-&gt;&gt;B) to get back document B. The absolute path will be displayed at the buttom of the page. A message will appear to confirm if the patch is successful by comparing Hash CheckSum.\n\n**All output files will be in the directory of the App**\n**Click on any path to copy it to the clipboard**'}" textFill="#f8f8f1" wrapText="true">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children></AnchorPane>
+                                </content>
+                              </Tab>
+                           </tabs>
+                        </JFXTabPane>
                      </children>
                   </AnchorPane>
               </content>

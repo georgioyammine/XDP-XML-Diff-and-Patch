@@ -4,10 +4,10 @@ import java.util.Stack;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 
 
 public class Main extends Application {
@@ -15,10 +15,17 @@ public class Main extends Application {
 	@Override
 	public void start(Stage stage) throws Exception {
 		Parent root = FXMLLoader.load(getClass().getResource("mainScene.fxml"));
+		
 		Scene scene = new Scene(root, 800, 450);
+	
 		stage.setScene(scene);
 		stage.setResizable(false);
-		stage.setTitle("Application");
+		stage.setTitle("XDP: XML Diff And Patch");
+//		stage.getIcons().add(new Image("iconN (1).png"));
+		stage.getIcons().add(new Image("icon-main@3x.png"));
+//		stage.getIcons().add(new Image("icon-main@2x.png"));
+//		stage.getIcons().add(new Image("icon-main.png"));
+//		stage.getIcons().add(new Image(Main.class.getResourceAsStream( "icon.ico" ))); 
 		stage.show();
 
 	}

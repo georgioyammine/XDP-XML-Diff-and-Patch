@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Observable;
 import java.util.zip.CRC32;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,7 +27,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class XMLDiffAndPatch {
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+
+public class XMLDiffAndPatch extends Observable {
 	final static int updateRootName = 1;
 	final static int insertContained = 1;
 	final static int deleteContained = 1;
@@ -43,6 +47,13 @@ public class XMLDiffAndPatch {
 	private static ArrayList<Node> TreesInB = new ArrayList<>();
 
 	private static double version = 1.0;
+	
+	private static final DoubleProperty progressProperty = new SimpleDoubleProperty(0.0);
+
+	public static DoubleProperty getProgressProperty() {
+		
+	        return progressProperty;
+	}
 
 	private static class Info7 {
 		int x, y, nx, ny, z;
@@ -119,19 +130,27 @@ public class XMLDiffAndPatch {
 			del.add(new Info7(R1, R2, i - 1, 0, i, 0, dist[i][0]));
 			pointers[i][0] = del;
 		}
-		if (print)
-			System.out.println("Step 1 Done");
+		
+		if (print) {
+//			System.out.println("Step 1 Done");
+			progressProperty.set(0.1);
+		}
 		for (int j = 1; j <= n; j++) {
 			dist[0][j] = dist[0][j - 1] + CostInsertTree(rootB.getChildNodes().item(j - 1));
 			ArrayList<Object> ins = new ArrayList<>();
 			ins.add(new Info7(R1, R2, 0, j - 1, 0, j, dist[0][j]));
 			pointers[0][j] = ins;
 		}
-		if (print)
-			System.out.println("Step 2 Done");
+		if (print) {
+//			System.out.println("Step 2 Done");
+			progressProperty.set(0.15);
+		}
 		for (int i = 1; i <= m; i++) {
-			if (print)
-				System.out.println("Progress: " + i + "/" + m);
+			
+			if (print) {
+//				System.out.println("Progress: " + i + "/" + m);
+				progressProperty.set(0.15+0.75*(i/(m+0.0)));
+			}
 			for (int j = 1; j <= n; j++) {
 //				if (print && n>=1000 && j % 100 == 0)
 //					System.out.println("\tProgress: " + i + "/" + m + "- " + j + "/" + n);
@@ -274,16 +293,16 @@ public class XMLDiffAndPatch {
 				}
 			}
 		}
-		if (print && m < 20 && n <20) {
-			System.out.println(R1 + ":" + rootA + " " + R2 + ":" + rootB);
-			for (int i = 0; i <= m; i++) {
-				for (int j = 0; j <= n; j++) {
-					System.out.print(dist[i][j] + "\t");
-				}
-				System.out.println();
-			}
-			System.out.println();
-		}
+//		if (print && m < 20 && n <20) {
+//			System.out.println(R1 + ":" + rootA + " " + R2 + ":" + rootB);
+//			for (int i = 0; i <= m; i++) {
+//				for (int j = 0; j <= n; j++) {
+//					System.out.print(dist[i][j] + "\t");
+//				}
+//				System.out.println();
+//			}
+//			System.out.println();
+//		}
 
 		ArrayList<Object> ES = getEditScript(m, n, pointers, dist, R1, R2);
 		results.add(0, ES);
@@ -334,13 +353,20 @@ public class XMLDiffAndPatch {
 	@SuppressWarnings("unchecked")
 	public static ArrayList<String> TEDandEditScript(String fileName1, String fileName2, boolean reversible)
 			throws Exception {
+		costsOfTrees     = new HashMap<>();
+		costsOfTreesBinA = new HashMap<>();
+		costsOfTreesAinB = new HashMap<>();
 
+		TreesInA = new ArrayList<>();
+		TreesInB = new ArrayList<>();
+		
+		progressProperty.set(0.0);
 		File file = new File(fileName1);
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document document = db.parse(file);
-		document.getDocumentElement().normalize();
+//		document.getDocumentElement().normalize();
 		Element root = document.getDocumentElement();
 
 		File file2 = new File(fileName2);
@@ -348,15 +374,15 @@ public class XMLDiffAndPatch {
 		dbf2.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 		DocumentBuilder db2 = dbf2.newDocumentBuilder();
 		Document document2 = db2.parse(file2);
-		document2.getDocumentElement().normalize();
+//		document2.getDocumentElement().normalize();
 		Element root2 = document2.getDocumentElement();
 
 		clean(root);
 		clean(root2);
-
+		
 		getTreesInA(root); // pre-processing
 		getTreesInB(root2); // pre-processing
-
+		progressProperty.set(0.05);
 		System.out.println("Started TED");
 		ArrayList<Object> ted = XMLDiffAndPatch.TED(root, root2, "A", "B", true);
 
@@ -369,7 +395,7 @@ public class XMLDiffAndPatch {
 		else
 			patchFIleName = reversibleEditScriptToXML((ArrayList<ArrayList<Object>>) ted.get(1), file, file2, root, root2, distance,
 					similarity);
-
+		progressProperty.set(1);
 		ArrayList<String> arl = new ArrayList<>();
 		arl.add(distance +"");
 		arl.add(similarity+"");
@@ -407,55 +433,6 @@ public class XMLDiffAndPatch {
 			getTreesInB(list.item(i));
 		}
 	}
-
-	// old methods;new ones in testing
-	// private static int CostInsertTree(Node rootB) {
-	// if (costsOfTrees.containsKey(rootB))
-	// return costsOfTrees.get(rootB);
-	// if (rootB.getNodeType() != Node.TEXT_NODE) {
-	// if (containedIn(rootB, TreesInA)) {
-	// // costsOfTrees.put(rootB, insertContained);
-	// return insertContained;
-	// }
-	// int cost = deleteOrInsertLeaf;
-	// NodeList childs = rootB.getChildNodes();
-	// for (int i = 0; i < childs.getLength(); i++)
-	// cost += CostDeleteTree(childs.item(i));
-	//
-	// // cost of inserting attributes
-	// cost += (attributeNameCost + attributeValueCost) *
-	// rootB.getAttributes().getLength();
-	//
-	// costsOfTrees.put(rootB, cost);
-	// return cost;
-	// } else {
-	// return contentTokenCost * rootB.getTextContent().split("\\s+").length;
-	// }
-	// }
-	//
-	// private static int CostDeleteTree(Node rootA) {
-	// if (costsOfTrees.containsKey(rootA))
-	// return costsOfTrees.get(rootA);
-	// if (rootA.getNodeType() != Node.TEXT_NODE) {
-	// if (containedIn(rootA, TreesInB)) {
-	// // costsOfTrees.put(rootA, insertContained);
-	// return insertContained;
-	// }
-	// int cost = deleteOrInsertLeaf;
-	// NodeList childs = rootA.getChildNodes();
-	// for (int i = 0; i < childs.getLength(); i++)
-	// cost += CostDeleteTree(childs.item(i));
-	//
-	// // cost of inserting attributes
-	// cost += (attributeNameCost + attributeValueCost) *
-	// rootA.getAttributes().getLength();
-	//
-	// costsOfTrees.put(rootA, cost);
-	// return cost;
-	// } else {
-	// return contentTokenCost * rootA.getTextContent().split("\\s+").length;
-	// }
-	// }
 
 	private static int CostInsertTree(Node rootB) {
 		if (costsOfTrees.containsKey(rootB))
@@ -1745,13 +1722,13 @@ public class XMLDiffAndPatch {
 		dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document dcm = db.parse(file);
-		dcm.getDocumentElement().normalize();
+//		dcm.getDocumentElement().normalize();
 		Element root = dcm.getDocumentElement();
 		clean(root);
 		return root;
 	}
 
-	public static String applyPatchXML(String fileName, String ESXML, boolean bypass) throws Exception {
+	public static ArrayList<String> applyPatchXML(String fileName, String ESXML, boolean bypass) throws Exception {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -1766,7 +1743,10 @@ public class XMLDiffAndPatch {
 				if (Double.parseDouble(
 						((Element) ESroot).getAttributes().getNamedItem("version").getNodeValue()) != version) {
 					System.out.println("Error: Incompatible version");
-					return "";
+					ArrayList<String> arl= new ArrayList<>();
+					arl.add("Error: Incompatible version");
+					arl.add("");
+					return arl;
 				}
 			}
 
@@ -1787,7 +1767,10 @@ public class XMLDiffAndPatch {
 
 				if (!HashCodeMatches) {
 					System.out.println("Error: Original File does not match!");
-					return "";
+					ArrayList<String> arl= new ArrayList<>();
+					arl.add("Error: Original File does not match!");
+					arl.add("");
+					return arl;
 				}
 			}
 			if (!fileNameMatches) {
@@ -1998,19 +1981,26 @@ public class XMLDiffAndPatch {
 			long crc2 = checksumBufferedInputStream(tmpInput2);
 			String hashInput2 = Long.toHexString(crc2);
 			tmpInput2.delete();
-
+			ArrayList<String> arl= new ArrayList<>();
+			
+			
 			if (!targetHash.equals(hashInput2)) {
 				System.out.println("Wrong Result Expected: Hash checksum does not match");
+				arl.add("Wrong Result Expected: Hash checksum does not match");
 			} else {
 				System.out.println("Patch successful, hash checksum matches!");
+				arl.add("Patch successful, hash checksum matches!");
 			}
-
-			return absPath;
+			arl.add(absPath);
+			return arl;
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return "";
+			ArrayList<String> arl= new ArrayList<>();
+			arl.add("Error Exception: "+e.toString());
+			arl.add("");
+			return arl;
 		}
 
 	}
@@ -2059,8 +2049,9 @@ public class XMLDiffAndPatch {
 	}
 
 	public static void clean(Node node) {
+		node.normalize();
 		NodeList childNodes = node.getChildNodes();
-
+		
 		for (int n = childNodes.getLength() - 1; n >= 0; n--) {
 			Node child = childNodes.item(n);
 			short nodeType = child.getNodeType();
