@@ -1,11 +1,11 @@
-# XDP - XML Diff and Patching
+# XDP - XML Diff and Patch
 
 **XDP** is a tool in built in **Java** that compares two **XML** documents (structure and content), provides the **diff** file represented in an XML format and that highlights the **operations** that must be executed in order to transform a file into the other. This diff can be made **reversible** to provide A->B patch or B->A patch. Moreover, this tool can do the **patching** having as inputs the XML file and its corresponding diff file and transforms it to the target XML document. This tool has many applications: 
 - data warehousing
 - version control
 - XML retrieval and much more.
 
-This Application is part of a project in the **Lebanese American University**, Course: Intelligent Data Processing and Applications (COE 543/743).
+_This Application is part of a project in the **Lebanese American University**, Course: Intelligent Data Processing and Applications (COE 543/743)._
 
 ## Authors
 This Tool is built by **Georgio Yammine** and **Rami Naffah**.
