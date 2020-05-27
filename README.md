@@ -27,7 +27,7 @@ The variations we implemented were:
 3. Text nodes are tokenized on space (“ “) and are processed in EDWords.
 4. Element Nodes are updated using a call of TED.
 
-**The report of our application is included in the report and includes more in depth explanation.**
+_The report of our application is included in the repository and includes a more in depth explanation and information._
 
 ## Diff Format
 Non-Reversible Diff to the left and Reversible Diff to the right with extra info highlighted in Yellow:
