@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<abc att="102">
+	<staff identity="1001">
+		<firstname>yong</firstname>
+		<lastname>mook  elee</lastname>
+		<ckn>mkyong</ckn>
+		<salary>200000</salary>
+	</staff>
+</abc>

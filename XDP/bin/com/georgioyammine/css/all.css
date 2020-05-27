@@ -1,0 +1,125 @@
+*{
+    -fx-primary : #2A2E37;
+    -fx-secondary : #FFFF8D;
+    -fx-primarytext : #B2B2B2;
+    -fx-blue: #1976D2;
+    -fx-red: #FF0000;
+    -fx-color-1:#1976D2;
+}
+.root{
+    -fx-background-color: -fx-primary;
+}
+.tab-header-background {
+	-fx-background-color: -fx-primary;
+}
+#XDP_MAIN{
+    -fx-pref-width : 197;
+-fx-pref-height : 60;
+}
+
+.combo-box .list-cell {
+	-fx-text-fill: -fx-primarytext;
+}
+.text-field{
+	-fx-prompt-text-fill: rgb(130,130,130);
+}
+.tab{
+    -fx-pref-width : 158;
+-fx-pref-height : 60;
+}
+#stab{
+    -fx-pref-width : 180;
+-fx-pref-height : 40;
+}
+#stabW{
+    -fx-pref-width : 395;
+-fx-pref-height : 40;
+}
+.button:hover, .button:focused{
+    -fx-border-color: -fx-secondary;
+    -fx-background-color: -fx-secondary;
+    -fx-text-fill: -fx-primary;
+}
+.settings-tab{
+    -fx-background-color: derive(-fx-primary, 10%);
+    -fx-padding: 5px 20px 5px 20px;
+}
+.versionPane{
+	-fx-background-color: -fx-primary;
+}
+
+.settings-tab:selected{
+    -fx-background-color: -fx-secondary;
+}
+
+.settings-tab:selected .tab-label{
+    -fx-text-fill: -fx-primary;
+}
+
+.settings-tab .tab-header-background{
+    -fx-background-color: derive(-fx-primary, -50%);
+}
+.button{
+    -fx-text-fill: -fx-primarytext;
+    -fx-background-color: -fx-primary;
+    -fx-border-color: -fx-secondary;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-font-size: 12pt;
+}
+.text-field
+{
+    -fx-text-fill: -fx-primarytext;
+    -fx-font-size : 12pt;
+    -jfx-focus-color: -fx-secondary;
+   /*  -fx-text-fill: derive(-fx-secondary, 20%);*/
+}
+.tree-view {
+    tree_view_background_color: #333;
+
+    alternate_row_color: #3c3c3c;
+
+    text_color: white;
+    text_selected_color: white;
+    text_hover_color: text_color;
+
+    arrow_color: white;
+    arrow__hover_color: text_hover_color;
+    arrow_selected_hover_color: text_selected_color;
+}
+
+.scroll-bar:vertical {
+    thumb_color: #c2c7ca;
+    thumb_hover_color: #838689;
+    thumb_pressed_color: #585a5c;
+
+    track_color: #e9e9e9;
+
+    inc_dec_button_color: #e8e6e3;
+    inc_dec_button_hover_color: #c6cacf;
+    inc_dec_button_pressed_color: #585a5c;
+
+    arrow_color: #5a5a59;
+    arrow_pressed_color: white;
+}
+
+.scroll-pane {
+    corner_background_color: #e9e9e9;
+}
+.slider {
+    track_hover_color: #666666;
+    thumb_hover_color: #171717;
+
+    thumb_pressed_color: #cccccc;
+}
+.tile:hover {
+   /* -fx-border-color: -fx-secondary; */
+    -fx-border-color: -fx-primarytext;
+    -fx-border-width: 2;    
+    -fx-border-radius: 4px;
+}
+
+#aboutText: {
+    color: white;
+}
+
