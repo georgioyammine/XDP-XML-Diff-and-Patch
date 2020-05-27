@@ -5,7 +5,7 @@
 - version control
 - XML retrieval and much more.
 
-_This Application is part of a project in the **Lebanese American University**, Course: Intelligent Data Processing and Applications (COE 543/743)._
+_This Application was part of a project in the **Lebanese American University**, Course: Intelligent Data Processing and Applications (COE 543/743)._
 
 ## Authors
 This Tool is built by **Georgio Yammine** and **Rami Naffah**.
