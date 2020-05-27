@@ -29,14 +29,10 @@ The variations we implemented were:
 
 **The report of our application is included in the report and includes more in depth explanation.**
 
-## Patch Format
-Non-Reversible Patch:
+## Diff Format
+Non-Reversible Diff to the left and Reversible Diff to the right with extra info highlighted in Yellow:
 
-![non-reversible](/images/diffFormatNotReversible.PNG)
-
-Reversible Patch with extra info highlighted in Yellow.
-
-![reversible](/images/diffFormatReversible.PNG)
+![Diff](/images/Diff-format.png)
 
 ## Preview
 ![Get Diff](/images/getDiff.png)
