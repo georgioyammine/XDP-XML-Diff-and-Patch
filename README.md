@@ -19,7 +19,7 @@ Project and **runnable jar** file created in **eclipse**.
 exe created using **launch4j**.
 
 ## Tree Edit Distance
-The tree edit distance algorithm utilized in our study is an adaptation of **Nierman and Jagadish’s** main edit distance algorithm [1]. However, in our case, we have to also take into consideration the content such as **text nodes, attributes and more**.
+The tree edit distance algorithm utilized in our app is an adaptation of **Nierman and Jagadish’s** main edit distance algorithm [1]. However, in our case, we have to also take into consideration the content such as **text nodes, attributes and more**.
 
 The variations we implemented were:
 1. Updating root node changes the root label and root attributes.
