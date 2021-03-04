@@ -14,6 +14,11 @@ This Tool is built by **Georgio Yammine** and **Rami Naffah**.
 **Java 8**, **JavaFX** and **FXML** with **JFoenix** Library.
 
 ## Runnables and Project
+
+* [Oracle JDK 8](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html) is required for running the app and can be downloaded from [here](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html). 
+    * Be sure to have the path set to jdk 8. 
+    * This can be checked by calling `java -version`
+
 Project and **runnable jar** file created in **eclipse**.
 
 exe created using **launch4j**.
